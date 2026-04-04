@@ -172,7 +172,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" min-width="180px">
         <template #default="scope">
           <el-button
             link
@@ -181,6 +181,13 @@
             v-hasPermi="['study:course:update']"
           >
             编辑
+          </el-button>
+          <el-button
+            link
+            type="success"
+            @click="handleAiChat(scope.row)"
+          >
+            AI问答
           </el-button>
           <el-button
             link
@@ -298,6 +305,16 @@ const handleDeleteBatch = async () => {
 const checkedIds = ref<number[]>([])
 const handleRowCheckboxChange = (records: Course[]) => {
   checkedIds.value = records.map((item) => item.id!);
+}
+
+/** AI问答按钮操作 */
+const handleAiChat = async (row: Course) => {
+  if (!row.aiKnowledgeId) {
+    message.error('该课程未绑定知识库，无法进行AI问答')
+    return
+  }
+  // 跳转到学习问答页面，带上课程ID
+  window.open(`#/study/ai-tutor?courseId=${row.id}`, '_blank')
 }
 
 /** 导出按钮操作 */
