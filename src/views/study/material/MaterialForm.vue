@@ -57,7 +57,7 @@
       </el-form-item>
 
       <el-form-item label="资料文件" prop="fileUrl">
-        <FileUpload
+        <UploadFile
           v-model="formData.fileUrl"
           :limit="1"
           :file-size="100"
@@ -79,7 +79,7 @@
 import { MaterialApi, Material } from '@/api/study/material'
 import { CourseApi } from '@/api/study/course'
 import { KnowledgeApi } from '@/api/ai/knowledge/knowledge'
-import FileUpload from '@/components/FileUpload/index.vue'
+import UploadFile from '@/components/UploadFile/src/UploadFile.vue'
 
 /** 学习资料 表单 */
 defineOptions({ name: 'MaterialForm' })
