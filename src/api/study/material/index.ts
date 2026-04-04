@@ -55,4 +55,14 @@ export const MaterialApi = {
   exportMaterial: async (params) => {
     return await request.download({ url: `/study/material/export-excel`, params })
   },
+
+  // 同步资料到知识库
+  syncToKnowledge: async (id: number) => {
+    return await request.post({ url: `/study/material/sync-to-knowledge?id=` + id })
+  },
+
+  // 批量同步资料到知识库
+  syncListToKnowledge: async (ids: number[]) => {
+    return await request.post({ url: `/study/material/sync-list-to-knowledge?ids=${ids.join(',')}` })
+  },
 }

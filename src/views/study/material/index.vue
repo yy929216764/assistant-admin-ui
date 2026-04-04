@@ -6,7 +6,7 @@
       :model="queryParams"
       ref="queryFormRef"
       :inline="true"
-      label-width="68px"
+      label-width="80px"
     >
       <el-form-item label="资料名称" prop="materialName">
         <el-input
@@ -17,117 +17,33 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="资料类型 1-PDF 2-Word 3-Markdown 4-文本 5-视频 6-其他" prop="materialType">
+      <el-form-item label="资料类型" prop="materialType">
         <el-select
           v-model="queryParams.materialType"
-          placeholder="请选择资料类型 1-PDF 2-Word 3-Markdown 4-文本 5-视频 6-其他"
+          placeholder="请选择资料类型"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option label="PDF" :value="1" />
+          <el-option label="Word" :value="2" />
+          <el-option label="Markdown" :value="3" />
+          <el-option label="文本" :value="4" />
+          <el-option label="视频" :value="5" />
+          <el-option label="其他" :value="6" />
         </el-select>
       </el-form-item>
-      <el-form-item label="文件URL" prop="fileUrl">
-        <el-input
-          v-model="queryParams.fileUrl"
-          placeholder="请输入文件URL"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="文件大小(字节)" prop="fileSize">
-        <el-input
-          v-model="queryParams.fileSize"
-          placeholder="请输入文件大小(字节)"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="关联课程编号" prop="courseId">
-        <el-input
-          v-model="queryParams.courseId"
-          placeholder="请输入关联课程编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="关联章节编号" prop="chapterId">
-        <el-input
-          v-model="queryParams.chapterId"
-          placeholder="请输入关联章节编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="关联知识点编号" prop="knowledgePointId">
-        <el-input
-          v-model="queryParams.knowledgePointId"
-          placeholder="请输入关联知识点编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="目标AI知识库编号，对应 ai_knowledge.id" prop="aiKnowledgeId">
-        <el-input
-          v-model="queryParams.aiKnowledgeId"
-          placeholder="请输入目标AI知识库编号，对应 ai_knowledge.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="AI知识库文档编号，对应 ai_knowledge_document.id" prop="aiDocumentId">
-        <el-input
-          v-model="queryParams.aiDocumentId"
-          placeholder="请输入AI知识库文档编号，对应 ai_knowledge_document.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="知识库同步状态 0-待同步 1-同步中 2-成功 3-失败" prop="syncStatus">
+      <el-form-item label="同步状态" prop="syncStatus">
         <el-select
           v-model="queryParams.syncStatus"
-          placeholder="请选择知识库同步状态 0-待同步 1-同步中 2-成功 3-失败"
+          placeholder="请选择同步状态"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option label="待同步" :value="0" />
+          <el-option label="同步中" :value="1" />
+          <el-option label="同步成功" :value="2" />
+          <el-option label="同步失败" :value="3" />
         </el-select>
-      </el-form-item>
-      <el-form-item label="同步失败原因" prop="syncErrorMsg">
-        <el-input
-          v-model="queryParams.syncErrorMsg"
-          placeholder="请输入同步失败原因"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="最近同步时间" prop="syncTime">
-        <el-date-picker
-          v-model="queryParams.syncTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
-      <el-form-item label="上传用户编号" prop="uploadUserId">
-        <el-input
-          v-model="queryParams.uploadUserId"
-          placeholder="请输入上传用户编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
       </el-form-item>
       <el-form-item label="创建时间" prop="createTime">
         <el-date-picker
@@ -161,6 +77,15 @@
           <Icon icon="ep:download" class="mr-5px" /> 导出
         </el-button>
         <el-button
+            type="warning"
+            plain
+            :disabled="isEmpty(checkedIds)"
+            @click="handleSyncBatch"
+            v-hasPermi="['study:material:update']"
+        >
+          <Icon icon="ep:upload" class="mr-5px" /> 批量同步到知识库
+        </el-button>
+        <el-button
             type="danger"
             plain
             :disabled="isEmpty(checkedIds)"
@@ -184,18 +109,41 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="资料编号" align="center" prop="id" />
-      <el-table-column label="资料名称" align="center" prop="materialName" />
-      <el-table-column label="资料类型 1-PDF 2-Word 3-Markdown 4-文本 5-视频 6-其他" align="center" prop="materialType" />
-      <el-table-column label="文件URL" align="center" prop="fileUrl" />
-      <el-table-column label="文件大小(字节)" align="center" prop="fileSize" />
-      <el-table-column label="关联课程编号" align="center" prop="courseId" />
-      <el-table-column label="关联章节编号" align="center" prop="chapterId" />
-      <el-table-column label="关联知识点编号" align="center" prop="knowledgePointId" />
-      <el-table-column label="目标AI知识库编号，对应 ai_knowledge.id" align="center" prop="aiKnowledgeId" />
-      <el-table-column label="AI知识库文档编号，对应 ai_knowledge_document.id" align="center" prop="aiDocumentId" />
-      <el-table-column label="知识库同步状态 0-待同步 1-同步中 2-成功 3-失败" align="center" prop="syncStatus" />
-      <el-table-column label="同步失败原因" align="center" prop="syncErrorMsg" />
+      <el-table-column label="资料编号" align="center" prop="id" width="80" />
+      <el-table-column label="资料名称" align="center" prop="materialName" min-width="150" />
+      <el-table-column label="资料类型" align="center" prop="materialType" width="100">
+        <template #default="scope">
+          <el-tag v-if="scope.row.materialType === 1" type="primary">PDF</el-tag>
+          <el-tag v-else-if="scope.row.materialType === 2" type="success">Word</el-tag>
+          <el-tag v-else-if="scope.row.materialType === 3" type="info">Markdown</el-tag>
+          <el-tag v-else-if="scope.row.materialType === 4">文本</el-tag>
+          <el-tag v-else-if="scope.row.materialType === 5" type="warning">视频</el-tag>
+          <el-tag v-else type="danger">其他</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="文件大小" align="center" prop="fileSize" width="100">
+        <template #default="scope">
+          {{ formatFileSize(scope.row.fileSize) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="知识库" align="center" prop="aiKnowledgeId" width="100">
+        <template #default="scope">
+          <el-tag v-if="scope.row.aiKnowledgeId" type="success">已绑定</el-tag>
+          <el-tag v-else type="info">未绑定</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="同步状态" align="center" prop="syncStatus" width="100">
+        <template #default="scope">
+          <el-tag v-if="scope.row.syncStatus === 0" type="info">待同步</el-tag>
+          <el-tag v-else-if="scope.row.syncStatus === 1" type="warning">同步中</el-tag>
+          <el-tag v-else-if="scope.row.syncStatus === 2" type="success">同步成功</el-tag>
+          <el-tag v-else-if="scope.row.syncStatus === 3" type="danger">
+            <el-tooltip :content="scope.row.syncErrorMsg || '同步失败'" placement="top">
+              <span>同步失败</span>
+            </el-tooltip>
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column
         label="最近同步时间"
         align="center"
@@ -203,7 +151,6 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="上传用户编号" align="center" prop="uploadUserId" />
       <el-table-column
         label="创建时间"
         align="center"
@@ -211,7 +158,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" fixed="right" min-width="180px">
         <template #default="scope">
           <el-button
             link
@@ -220,6 +167,15 @@
             v-hasPermi="['study:material:update']"
           >
             编辑
+          </el-button>
+          <el-button
+            link
+            type="success"
+            @click="handleSync(scope.row.id)"
+            v-hasPermi="['study:material:update']"
+            :disabled="scope.row.syncStatus === 1 || !scope.row.aiKnowledgeId"
+          >
+            同步
           </el-button>
           <el-button
             link
@@ -266,21 +222,20 @@ const queryParams = reactive({
   pageSize: 10,
   materialName: undefined,
   materialType: undefined,
-  fileUrl: undefined,
-  fileSize: undefined,
-  courseId: undefined,
-  chapterId: undefined,
-  knowledgePointId: undefined,
-  aiKnowledgeId: undefined,
-  aiDocumentId: undefined,
   syncStatus: undefined,
-  syncErrorMsg: undefined,
-  syncTime: [],
-  uploadUserId: undefined,
   createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+
+/** 格式化文件大小 */
+const formatFileSize = (bytes?: number) => {
+  if (!bytes || bytes === 0) return '-'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i]
+}
 
 /** 查询列表 */
 const getList = async () => {
@@ -340,6 +295,27 @@ const handleDeleteBatch = async () => {
 const checkedIds = ref<number[]>([])
 const handleRowCheckboxChange = (records: Material[]) => {
   checkedIds.value = records.map((item) => item.id!);
+}
+
+/** 同步到知识库 */
+const handleSync = async (id: number) => {
+  try {
+    await message.confirm('确认将资料同步到知识库？')
+    await MaterialApi.syncToKnowledge(id)
+    message.success('同步任务已提交，请稍后刷新查看状态')
+    getList()
+  } catch {}
+}
+
+/** 批量同步到知识库 */
+const handleSyncBatch = async () => {
+  try {
+    await message.confirm(`确认批量同步 ${checkedIds.value.length} 条资料到知识库？`)
+    await MaterialApi.syncListToKnowledge(checkedIds.value)
+    checkedIds.value = []
+    message.success('批量同步任务已提交，请稍后刷新查看状态')
+    getList()
+  } catch {}
 }
 
 /** 导出按钮操作 */
