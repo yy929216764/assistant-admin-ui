@@ -8,19 +8,10 @@
       :inline="true"
       label-width="68px"
     >
-      <el-form-item label="课程编号" prop="courseId">
+      <el-form-item label="课程" prop="courseId">
         <el-input
           v-model="queryParams.courseId"
           placeholder="请输入课程编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="父章节编号，0-顶级" prop="parentId">
-        <el-input
-          v-model="queryParams.parentId"
-          placeholder="请输入父章节编号，0-顶级"
           clearable
           @keyup.enter="handleQuery"
           class="!w-240px"
@@ -33,35 +24,6 @@
           clearable
           @keyup.enter="handleQuery"
           class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="章节排序" prop="chapterOrder">
-        <el-input
-          v-model="queryParams.chapterOrder"
-          placeholder="请输入章节排序"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="章节层级 1-章 2-节" prop="chapterLevel">
-        <el-input
-          v-model="queryParams.chapterLevel"
-          placeholder="请输入章节层级 1-章 2-节"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
         />
       </el-form-item>
       <el-form-item>
@@ -108,12 +70,14 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="章节编号" align="center" prop="id" />
-      <el-table-column label="课程编号" align="center" prop="courseId" />
-      <el-table-column label="父章节编号，0-顶级" align="center" prop="parentId" />
-      <el-table-column label="章节名称" align="center" prop="chapterName" />
-      <el-table-column label="章节排序" align="center" prop="chapterOrder" />
-      <el-table-column label="章节层级 1-章 2-节" align="center" prop="chapterLevel" />
+      <el-table-column label="章节编号" align="center" prop="id" width="80" />
+      <el-table-column label="章节名称" align="center" prop="chapterName" min-width="200" />
+      <el-table-column label="章节层级" align="center" prop="chapterLevel" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.CHAPTER_LEVEL" :value="scope.row.chapterLevel" />
+        </template>
+      </el-table-column>
+      <el-table-column label="排序" align="center" prop="chapterOrder" width="80" />
       <el-table-column
         label="创建时间"
         align="center"
@@ -121,7 +85,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -160,6 +124,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { CourseChapterApi, CourseChapter } from '@/api/study/coursechapter'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import CourseChapterForm from './CourseChapterForm.vue'
 
 /** 课程章节 列表 */
@@ -175,11 +141,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   courseId: undefined,
-  parentId: undefined,
   chapterName: undefined,
-  chapterOrder: undefined,
-  chapterLevel: undefined,
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

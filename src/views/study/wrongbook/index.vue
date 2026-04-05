@@ -8,16 +8,7 @@
       :inline="true"
       label-width="68px"
     >
-      <el-form-item label="用户编号" prop="userId">
-        <el-input
-          v-model="queryParams.userId"
-          placeholder="请输入用户编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="课程编号" prop="courseId">
+      <el-form-item label="课程" prop="courseId">
         <el-input
           v-model="queryParams.courseId"
           placeholder="请输入课程编号"
@@ -26,174 +17,42 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="知识点编号" prop="knowledgePointId">
-        <el-input
-          v-model="queryParams.knowledgePointId"
-          placeholder="请输入知识点编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="题目编号" prop="questionId">
-        <el-input
-          v-model="queryParams.questionId"
-          placeholder="请输入题目编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="练习编号" prop="exerciseId">
-        <el-input
-          v-model="queryParams.exerciseId"
-          placeholder="请输入练习编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="题型 1-单选 2-判断 3-简答" prop="questionType">
+      <el-form-item label="题型" prop="questionType">
         <el-select
           v-model="queryParams.questionType"
-          placeholder="请选择题型 1-单选 2-判断 3-简答"
+          placeholder="请选择题型"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.QUESTION_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="题目选项快照(JSON)" prop="optionsJson">
-        <el-input
-          v-model="queryParams.optionsJson"
-          placeholder="请输入题目选项快照(JSON)"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="正确答案快照" prop="correctAnswer">
-        <el-input
-          v-model="queryParams.correctAnswer"
-          placeholder="请输入正确答案快照"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="题目解析快照" prop="questionAnalysis">
-        <el-input
-          v-model="queryParams.questionAnalysis"
-          placeholder="请输入题目解析快照"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="当时作答答案" prop="userAnswer">
-        <el-input
-          v-model="queryParams.userAnswer"
-          placeholder="请输入当时作答答案"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="错误次数" prop="wrongCount">
-        <el-input
-          v-model="queryParams.wrongCount"
-          placeholder="请输入错误次数"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="掌握状态 0-未掌握 1-已掌握" prop="masterStatus">
+      <el-form-item label="掌握状态" prop="masterStatus">
         <el-select
           v-model="queryParams.masterStatus"
-          placeholder="请选择掌握状态 0-未掌握 1-已掌握"
+          placeholder="请选择掌握状态"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.MASTER_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="AI错因分析结果" prop="aiAnalysis">
-        <el-input
-          v-model="queryParams.aiAnalysis"
-          placeholder="请输入AI错因分析结果"
-          clearable
-          @keyup.enter="handleQuery"
+      <el-form-item label="错误次数>" prop="wrongCount">
+        <el-input-number
+          v-model="queryParams.wrongCount"
+          placeholder="错误次数大于"
+          :min="0"
           class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="复习建议" prop="reviewSuggestion">
-        <el-input
-          v-model="queryParams.reviewSuggestion"
-          placeholder="请输入复习建议"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="分析使用模型编号，对应 ai_model.id" prop="analysisModelId">
-        <el-input
-          v-model="queryParams.analysisModelId"
-          placeholder="请输入分析使用模型编号，对应 ai_model.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="分析使用AI对话编号，对应 ai_chat_conversation.id" prop="analysisConversationId">
-        <el-input
-          v-model="queryParams.analysisConversationId"
-          placeholder="请输入分析使用AI对话编号，对应 ai_chat_conversation.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="分析结果消息编号，对应 ai_chat_message.id" prop="analysisMessageId">
-        <el-input
-          v-model="queryParams.analysisMessageId"
-          placeholder="请输入分析结果消息编号，对应 ai_chat_message.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="最后错误时间" prop="lastWrongTime">
-        <el-date-picker
-          v-model="queryParams.lastWrongTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
-      <el-form-item label="掌握时间" prop="masterTime">
-        <el-date-picker
-          v-model="queryParams.masterTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
         />
       </el-form-item>
       <el-form-item>
@@ -240,25 +99,20 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="错题记录编号" align="center" prop="id" />
-      <el-table-column label="用户编号" align="center" prop="userId" />
-      <el-table-column label="课程编号" align="center" prop="courseId" />
-      <el-table-column label="知识点编号" align="center" prop="knowledgePointId" />
-      <el-table-column label="题目编号" align="center" prop="questionId" />
-      <el-table-column label="练习编号" align="center" prop="exerciseId" />
-      <el-table-column label="题型 1-单选 2-判断 3-简答" align="center" prop="questionType" />
-      <el-table-column label="题目内容快照" align="center" prop="questionContent" />
-      <el-table-column label="题目选项快照(JSON)" align="center" prop="optionsJson" />
-      <el-table-column label="正确答案快照" align="center" prop="correctAnswer" />
-      <el-table-column label="题目解析快照" align="center" prop="questionAnalysis" />
-      <el-table-column label="当时作答答案" align="center" prop="userAnswer" />
-      <el-table-column label="错误次数" align="center" prop="wrongCount" />
-      <el-table-column label="掌握状态 0-未掌握 1-已掌握" align="center" prop="masterStatus" />
-      <el-table-column label="AI错因分析结果" align="center" prop="aiAnalysis" />
-      <el-table-column label="复习建议" align="center" prop="reviewSuggestion" />
-      <el-table-column label="分析使用模型编号，对应 ai_model.id" align="center" prop="analysisModelId" />
-      <el-table-column label="分析使用AI对话编号，对应 ai_chat_conversation.id" align="center" prop="analysisConversationId" />
-      <el-table-column label="分析结果消息编号，对应 ai_chat_message.id" align="center" prop="analysisMessageId" />
+      <el-table-column label="编号" align="center" prop="id" width="80" />
+      <el-table-column label="课程" align="center" prop="courseName" width="150" />
+      <el-table-column label="题型" align="center" prop="questionType" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QUESTION_TYPE" :value="scope.row.questionType" />
+        </template>
+      </el-table-column>
+      <el-table-column label="题目内容" align="center" prop="questionContent" min-width="200" show-overflow-tooltip />
+      <el-table-column label="错误次数" align="center" prop="wrongCount" width="100" />
+      <el-table-column label="掌握状态" align="center" prop="masterStatus" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.MASTER_STATUS" :value="scope.row.masterStatus" />
+        </template>
+      </el-table-column>
       <el-table-column
         label="最后错误时间"
         align="center"
@@ -266,21 +120,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column
-        label="掌握时间"
-        align="center"
-        prop="masterTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" min-width="180px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -319,6 +159,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { WrongBookApi, WrongBook } from '@/api/study/wrongbook'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import WrongBookForm from './WrongBookForm.vue'
 
 /** 错题本 列表 */
@@ -333,27 +175,10 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  userId: undefined,
   courseId: undefined,
-  knowledgePointId: undefined,
-  questionId: undefined,
-  exerciseId: undefined,
   questionType: undefined,
-  questionContent: undefined,
-  optionsJson: undefined,
-  correctAnswer: undefined,
-  questionAnalysis: undefined,
-  userAnswer: undefined,
-  wrongCount: undefined,
   masterStatus: undefined,
-  aiAnalysis: undefined,
-  reviewSuggestion: undefined,
-  analysisModelId: undefined,
-  analysisConversationId: undefined,
-  analysisMessageId: undefined,
-  lastWrongTime: [],
-  masterTime: [],
-  createTime: [],
+  wrongCount: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

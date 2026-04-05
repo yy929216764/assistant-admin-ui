@@ -17,7 +17,7 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="用户编号" prop="userId">
+      <el-form-item label="用户" prop="userId">
         <el-input
           v-model="queryParams.userId"
           placeholder="请输入用户编号"
@@ -26,7 +26,7 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="课程编号" prop="courseId">
+      <el-form-item label="课程" prop="courseId">
         <el-input
           v-model="queryParams.courseId"
           placeholder="请输入课程编号"
@@ -35,130 +35,35 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="章节编号" prop="chapterId">
-        <el-input
-          v-model="queryParams.chapterId"
-          placeholder="请输入章节编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="知识点编号" prop="knowledgePointId">
-        <el-input
-          v-model="queryParams.knowledgePointId"
-          placeholder="请输入知识点编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="练习类型 1-AI生成 2-固定练习" prop="exerciseType">
+      <el-form-item label="练习类型" prop="exerciseType">
         <el-select
           v-model="queryParams.exerciseType"
-          placeholder="请选择练习类型 1-AI生成 2-固定练习"
+          placeholder="请选择练习类型"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.EXERCISE_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="题目数量" prop="questionCount">
-        <el-input
-          v-model="queryParams.questionCount"
-          placeholder="请输入题目数量"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="状态 0-未开始 1-进行中 2-已完成" prop="status">
+      <el-form-item label="练习状态" prop="status">
         <el-select
           v-model="queryParams.status"
-          placeholder="请选择状态 0-未开始 1-进行中 2-已完成"
+          placeholder="请选择练习状态"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.EXERCISE_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
-      </el-form-item>
-      <el-form-item label="得分" prop="score">
-        <el-input
-          v-model="queryParams.score"
-          placeholder="请输入得分"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="正确题数" prop="correctCount">
-        <el-input
-          v-model="queryParams.correctCount"
-          placeholder="请输入正确题数"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="生成题目使用的模型编号，对应 ai_model.id" prop="generateModelId">
-        <el-input
-          v-model="queryParams.generateModelId"
-          placeholder="请输入生成题目使用的模型编号，对应 ai_model.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="生成题目使用的AI对话编号，对应 ai_chat_conversation.id" prop="generateConversationId">
-        <el-input
-          v-model="queryParams.generateConversationId"
-          placeholder="请输入生成题目使用的AI对话编号，对应 ai_chat_conversation.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="生成题目时的提示词快照" prop="promptSnapshot">
-        <el-input
-          v-model="queryParams.promptSnapshot"
-          placeholder="请输入生成题目时的提示词快照"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="开始时间" prop="startTime">
-        <el-date-picker
-          v-model="queryParams.startTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
-      <el-form-item label="提交时间" prop="submitTime">
-        <el-date-picker
-          v-model="queryParams.submitTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -204,34 +109,28 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="练习编号" align="center" prop="id" />
-      <el-table-column label="练习名称" align="center" prop="exerciseName" />
-      <el-table-column label="用户编号" align="center" prop="userId" />
-      <el-table-column label="课程编号" align="center" prop="courseId" />
-      <el-table-column label="章节编号" align="center" prop="chapterId" />
-      <el-table-column label="知识点编号" align="center" prop="knowledgePointId" />
-      <el-table-column label="练习类型 1-AI生成 2-固定练习" align="center" prop="exerciseType" />
-      <el-table-column label="题目数量" align="center" prop="questionCount" />
-      <el-table-column label="状态 0-未开始 1-进行中 2-已完成" align="center" prop="status" />
-      <el-table-column label="得分" align="center" prop="score" />
-      <el-table-column label="正确题数" align="center" prop="correctCount" />
-      <el-table-column label="生成题目使用的模型编号，对应 ai_model.id" align="center" prop="generateModelId" />
-      <el-table-column label="生成题目使用的AI对话编号，对应 ai_chat_conversation.id" align="center" prop="generateConversationId" />
-      <el-table-column label="生成题目时的提示词快照" align="center" prop="promptSnapshot" />
-      <el-table-column
-        label="开始时间"
-        align="center"
-        prop="startTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
-      <el-table-column
-        label="提交时间"
-        align="center"
-        prop="submitTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
+      <el-table-column label="练习编号" align="center" prop="id" width="80" />
+      <el-table-column label="练习名称" align="center" prop="exerciseName" min-width="200" />
+      <el-table-column label="用户" align="center" prop="userName" width="120" />
+      <el-table-column label="练习类型" align="center" prop="exerciseType" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.EXERCISE_TYPE" :value="scope.row.exerciseType" />
+        </template>
+      </el-table-column>
+      <el-table-column label="题目数量" align="center" prop="questionCount" width="100" />
+      <el-table-column label="练习状态" align="center" prop="status" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.EXERCISE_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
+      <el-table-column label="得分" align="center" width="100">
+        <template #default="scope">
+          <span v-if="scope.row.score !== undefined && scope.row.score !== null">
+            {{ scope.row.score }} / {{ scope.row.questionCount * 20 }}
+          </span>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
       <el-table-column
         label="创建时间"
         align="center"
@@ -239,7 +138,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -278,6 +177,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { ExerciseApi, Exercise } from '@/api/study/exercise'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import ExerciseForm from './ExerciseForm.vue'
 
 /** 练习主 列表 */
@@ -295,19 +196,8 @@ const queryParams = reactive({
   exerciseName: undefined,
   userId: undefined,
   courseId: undefined,
-  chapterId: undefined,
-  knowledgePointId: undefined,
   exerciseType: undefined,
-  questionCount: undefined,
   status: undefined,
-  score: undefined,
-  correctCount: undefined,
-  generateModelId: undefined,
-  generateConversationId: undefined,
-  promptSnapshot: undefined,
-  startTime: [],
-  submitTime: [],
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

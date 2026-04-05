@@ -61,22 +61,22 @@ export const ExerciseApi = {
   // ==================== 阶段三新增：练习生成与答题接口 ====================
 
   // 生成AI练习题
-  generateExercise: async (data: ExerciseGenerateReqVO) => {
+  generateExercise: async (data: ExerciseGenerateReqVO): Promise<number> => {
     return await request.post({ url: `/study/exercise/generate`, data })
   },
 
   // 获取练习详情（含题目列表）
-  getExerciseDetail: async (id: number) => {
+  getExerciseDetail: async (id: number): Promise<ExerciseDetailRespVO> => {
     return await request.get({ url: `/study/exercise/detail?id=` + id })
   },
 
   // 提交答案
-  submitAnswer: async (data: AnswerSubmitReqVO) => {
+  submitAnswer: async (data: AnswerSubmitReqVO): Promise<AnswerSubmitRespVO> => {
     return await request.post({ url: `/study/exercise/answer/submit`, data })
   },
 
   // 完成练习
-  completeExercise: async (exerciseId: number) => {
+  completeExercise: async (exerciseId: number): Promise<ExerciseResultRespVO> => {
     return await request.post({ url: `/study/exercise/complete`, params: { exerciseId } })
   },
 }

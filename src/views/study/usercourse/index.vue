@@ -8,7 +8,7 @@
       :inline="true"
       label-width="68px"
     >
-      <el-form-item label="用户编号" prop="userId">
+      <el-form-item label="用户" prop="userId">
         <el-input
           v-model="queryParams.userId"
           placeholder="请输入用户编号"
@@ -17,7 +17,7 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="课程编号" prop="courseId">
+      <el-form-item label="课程" prop="courseId">
         <el-input
           v-model="queryParams.courseId"
           placeholder="请输入课程编号"
@@ -26,57 +26,20 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="状态 1-学习中 2-已完成 3-已放弃" prop="enrollStatus">
+      <el-form-item label="学习状态" prop="enrollStatus">
         <el-select
           v-model="queryParams.enrollStatus"
-          placeholder="请选择状态 1-学习中 2-已完成 3-已放弃"
+          placeholder="请选择学习状态"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.ENROLL_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
-      </el-form-item>
-      <el-form-item label="学习进度百分比" prop="progressPercent">
-        <el-input
-          v-model="queryParams.progressPercent"
-          placeholder="请输入学习进度百分比"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="最后学习时间" prop="lastStudyTime">
-        <el-date-picker
-          v-model="queryParams.lastStudyTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
-      <el-form-item label="完成时间" prop="completeTime">
-        <el-date-picker
-          v-model="queryParams.completeTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -122,11 +85,19 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="编号" align="center" prop="id" />
-      <el-table-column label="用户编号" align="center" prop="userId" />
-      <el-table-column label="课程编号" align="center" prop="courseId" />
-      <el-table-column label="状态 1-学习中 2-已完成 3-已放弃" align="center" prop="enrollStatus" />
-      <el-table-column label="学习进度百分比" align="center" prop="progressPercent" />
+      <el-table-column label="编号" align="center" prop="id" width="80" />
+      <el-table-column label="用户" align="center" prop="userName" width="120" />
+      <el-table-column label="课程" align="center" prop="courseName" min-width="200" />
+      <el-table-column label="学习状态" align="center" prop="enrollStatus" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.ENROLL_STATUS" :value="scope.row.enrollStatus" />
+        </template>
+      </el-table-column>
+      <el-table-column label="学习进度" align="center" prop="progressPercent" width="100">
+        <template #default="scope">
+          <el-progress :percentage="scope.row.progressPercent || 0" :stroke-width="8" />
+        </template>
+      </el-table-column>
       <el-table-column
         label="最后学习时间"
         align="center"
@@ -134,21 +105,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column
-        label="完成时间"
-        align="center"
-        prop="completeTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -187,6 +144,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { UserCourseApi, UserCourse } from '@/api/study/usercourse'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import UserCourseForm from './UserCourseForm.vue'
 
 /** 用户课程学习关系 列表 */
@@ -204,10 +163,6 @@ const queryParams = reactive({
   userId: undefined,
   courseId: undefined,
   enrollStatus: undefined,
-  progressPercent: undefined,
-  lastStudyTime: [],
-  completeTime: [],
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

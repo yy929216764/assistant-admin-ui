@@ -28,6 +28,8 @@ export default ({command, mode}: ConfigEnv): UserConfig => {
             port: env.VITE_PORT, // 端口号
             host: "0.0.0.0",
             open: env.VITE_OPEN === 'true',
+            // 支持 Vue Router 的 history 模式，所有路由都回退到 index.html
+            historyApiFallback: true,
             // 本地跨域代理. 目前注释的原因：暂时没有用途，server 端已经支持跨域
             // proxy: {
             //   ['/admin-api']: {

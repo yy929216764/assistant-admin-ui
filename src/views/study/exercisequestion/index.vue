@@ -8,7 +8,7 @@
       :inline="true"
       label-width="68px"
     >
-      <el-form-item label="练习编号" prop="exerciseId">
+      <el-form-item label="练习" prop="exerciseId">
         <el-input
           v-model="queryParams.exerciseId"
           placeholder="请输入练习编号"
@@ -17,91 +17,35 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="题型 1-单选 2-判断 3-简答" prop="questionType">
+      <el-form-item label="题型" prop="questionType">
         <el-select
           v-model="queryParams.questionType"
-          placeholder="请选择题型 1-单选 2-判断 3-简答"
+          placeholder="请选择题型"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.QUESTION_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="选项(JSON)" prop="optionsJson">
-        <el-input
-          v-model="queryParams.optionsJson"
-          placeholder="请输入选项(JSON)"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="正确答案" prop="correctAnswer">
-        <el-input
-          v-model="queryParams.correctAnswer"
-          placeholder="请输入正确答案"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="答案解析" prop="analysis">
-        <el-input
-          v-model="queryParams.analysis"
-          placeholder="请输入答案解析"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="关联知识点编号" prop="knowledgePointId">
-        <el-input
-          v-model="queryParams.knowledgePointId"
-          placeholder="请输入关联知识点编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="来源类型 1-AI生成 2-预置题" prop="sourceType">
+      <el-form-item label="来源" prop="sourceType">
         <el-select
           v-model="queryParams.sourceType"
-          placeholder="请选择来源类型 1-AI生成 2-预置题"
+          placeholder="请选择来源类型"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.SOURCE_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
-      </el-form-item>
-      <el-form-item label="是否AI生成" prop="aiGenerated">
-        <el-select
-          v-model="queryParams.aiGenerated"
-          placeholder="请选择是否AI生成"
-          clearable
-          class="!w-240px"
-        >
-          <el-option label="请选择字典生成" value="" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="排序" prop="sort">
-        <el-input
-          v-model="queryParams.sort"
-          placeholder="请输入排序"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -147,25 +91,21 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="题目编号" align="center" prop="id" />
-      <el-table-column label="练习编号" align="center" prop="exerciseId" />
-      <el-table-column label="题型 1-单选 2-判断 3-简答" align="center" prop="questionType" />
-      <el-table-column label="题目内容" align="center" prop="questionContent" />
-      <el-table-column label="选项(JSON)" align="center" prop="optionsJson" />
-      <el-table-column label="正确答案" align="center" prop="correctAnswer" />
-      <el-table-column label="答案解析" align="center" prop="analysis" />
-      <el-table-column label="关联知识点编号" align="center" prop="knowledgePointId" />
-      <el-table-column label="来源类型 1-AI生成 2-预置题" align="center" prop="sourceType" />
-      <el-table-column label="是否AI生成" align="center" prop="aiGenerated" />
-      <el-table-column label="排序" align="center" prop="sort" />
-      <el-table-column
-        label="创建时间"
-        align="center"
-        prop="createTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="题目编号" align="center" prop="id" width="80" />
+      <el-table-column label="题型" align="center" prop="questionType" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.QUESTION_TYPE" :value="scope.row.questionType" />
+        </template>
+      </el-table-column>
+      <el-table-column label="题目内容" align="center" prop="questionContent" min-width="300" show-overflow-tooltip />
+      <el-table-column label="正确答案" align="center" prop="correctAnswer" width="100" />
+      <el-table-column label="来源" align="center" prop="sourceType" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.SOURCE_TYPE" :value="scope.row.sourceType" />
+        </template>
+      </el-table-column>
+      <el-table-column label="排序" align="center" prop="sort" width="80" />
+      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -204,6 +144,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { ExerciseQuestionApi, ExerciseQuestion } from '@/api/study/exercisequestion'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import ExerciseQuestionForm from './ExerciseQuestionForm.vue'
 
 /** 练习题 列表 */
@@ -220,15 +162,7 @@ const queryParams = reactive({
   pageSize: 10,
   exerciseId: undefined,
   questionType: undefined,
-  questionContent: undefined,
-  optionsJson: undefined,
-  correctAnswer: undefined,
-  analysis: undefined,
-  knowledgePointId: undefined,
   sourceType: undefined,
-  aiGenerated: undefined,
-  sort: undefined,
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

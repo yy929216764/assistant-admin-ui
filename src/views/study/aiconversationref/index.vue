@@ -8,16 +8,7 @@
       :inline="true"
       label-width="68px"
     >
-      <el-form-item label="AI对话编号，对应 ai_chat_conversation.id" prop="conversationId">
-        <el-input
-          v-model="queryParams.conversationId"
-          placeholder="请输入AI对话编号，对应 ai_chat_conversation.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="用户编号" prop="userId">
+      <el-form-item label="用户" prop="userId">
         <el-input
           v-model="queryParams.userId"
           placeholder="请输入用户编号"
@@ -26,7 +17,7 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="课程编号" prop="courseId">
+      <el-form-item label="课程" prop="courseId">
         <el-input
           v-model="queryParams.courseId"
           placeholder="请输入课程编号"
@@ -35,72 +26,35 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="章节编号" prop="chapterId">
-        <el-input
-          v-model="queryParams.chapterId"
-          placeholder="请输入章节编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="知识点编号" prop="knowledgePointId">
-        <el-input
-          v-model="queryParams.knowledgePointId"
-          placeholder="请输入知识点编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="知识库编号，对应 ai_knowledge.id" prop="aiKnowledgeId">
-        <el-input
-          v-model="queryParams.aiKnowledgeId"
-          placeholder="请输入知识库编号，对应 ai_knowledge.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="场景类型 1-课程问答 2-错题分析 3-练习生成" prop="sceneType">
+      <el-form-item label="场景" prop="sceneType">
         <el-select
           v-model="queryParams.sceneType"
-          placeholder="请选择场景类型 1-课程问答 2-错题分析 3-练习生成"
+          placeholder="请选择场景类型"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.SCENE_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="业务编号，按场景存放错题编号或练习编号等" prop="bizId">
-        <el-input
-          v-model="queryParams.bizId"
-          placeholder="请输入业务编号，按场景存放错题编号或练习编号等"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="状态 0-关闭 1-有效" prop="status">
+      <el-form-item label="状态" prop="status">
         <el-select
           v-model="queryParams.status"
-          placeholder="请选择状态 0-关闭 1-有效"
+          placeholder="请选择状态"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.COMMON_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -146,16 +100,19 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="编号" align="center" prop="id" />
-      <el-table-column label="AI对话编号，对应 ai_chat_conversation.id" align="center" prop="conversationId" />
-      <el-table-column label="用户编号" align="center" prop="userId" />
-      <el-table-column label="课程编号" align="center" prop="courseId" />
-      <el-table-column label="章节编号" align="center" prop="chapterId" />
-      <el-table-column label="知识点编号" align="center" prop="knowledgePointId" />
-      <el-table-column label="知识库编号，对应 ai_knowledge.id" align="center" prop="aiKnowledgeId" />
-      <el-table-column label="场景类型 1-课程问答 2-错题分析 3-练习生成" align="center" prop="sceneType" />
-      <el-table-column label="业务编号，按场景存放错题编号或练习编号等" align="center" prop="bizId" />
-      <el-table-column label="状态 0-关闭 1-有效" align="center" prop="status" />
+      <el-table-column label="编号" align="center" prop="id" width="80" />
+      <el-table-column label="用户" align="center" prop="userName" width="120" />
+      <el-table-column label="课程" align="center" prop="courseName" width="150" />
+      <el-table-column label="场景" align="center" prop="sceneType" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.SCENE_TYPE" :value="scope.row.sceneType" />
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" prop="status" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column
         label="创建时间"
         align="center"
@@ -163,7 +120,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -202,6 +159,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { AiConversationRefApi, AiConversationRef } from '@/api/study/aiconversationref'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import AiConversationRefForm from './AiConversationRefForm.vue'
 
 /** 学习场景与AI对话映射 列表 */
@@ -216,16 +175,10 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  conversationId: undefined,
   userId: undefined,
   courseId: undefined,
-  chapterId: undefined,
-  knowledgePointId: undefined,
-  aiKnowledgeId: undefined,
   sceneType: undefined,
-  bizId: undefined,
   status: undefined,
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

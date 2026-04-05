@@ -204,6 +204,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { StudyAiTutorApi, StudyAiConversation, StudyAiChatMessage } from '@/api/study/aiTutor'
@@ -213,6 +214,8 @@ import CreateConversationDialog from './components/CreateConversationDialog.vue'
 
 /** 学习问答页面 */
 defineOptions({ name: 'StudyAiTutor' })
+
+const route = useRoute()
 
 // ============ 数据状态 ============
 const selectedCourseId = ref<number>()
@@ -235,7 +238,14 @@ const createDialogVisible = ref(false)
 
 // ============ 生命周期 ============
 onMounted(() => {
-  loadCourseList()
+  loadCourseList().then(() => {
+    // 如果 URL 中有 courseId 参数，自动选择该课程
+    const courseId = route.query.courseId as string
+    if (courseId) {
+      selectedCourseId.value = Number(courseId)
+      handleCourseChange()
+    }
+  })
   loadConversationList()
 })
 

@@ -13,10 +13,7 @@
         </el-tag>
       </div>
       <div class="flex items-center gap-8px">
-        <el-tag v-if="courseName" size="small">{{ courseName }}</el-tag>
-        <el-button type="primary" size="small" :disabled="!canSubmit" @click="handleSubmit">
-          {{ isLastQuestion ? '完成' : '下一题' }}
-        </el-button>
+        <el-tag v-if="courseName" type="info" effect="plain" size="small">{{ courseName }}</el-tag>
       </div>
     </div>
 
@@ -48,17 +45,88 @@
               <span class="text-16px">{{ value }}</span>
             </div>
           </div>
+
         </div>
 
         <!-- 答题反馈 -->
-        <div v-if="showFeedback" class="mt-24px p-20px rounded-8px" :class="feedbackClass">
-          <div class="flex items-center gap-8px mb-12px">
-            <Icon :icon="feedbackIcon" class="text-20px" />
-            <span class="text-16px font-bold">{{ feedbackTitle }}</span>
+        <div v-if="showFeedback" class="mt-24px p-20px rounded-12px border-2" :class="feedbackClass">
+          <!-- 结果标题 -->
+          <div class="flex items-center gap-12px mb-16px pb-12px border-b" :class="answerResult?.isCorrect ? 'border-green-200' : 'border-red-200'">
+            <div
+              class="w-44px h-44px rounded-full flex items-center justify-center shadow-md"
+              :class="answerResult?.isCorrect ? 'bg-green-500' : 'bg-red-500'"
+            >
+              <Icon :icon="feedbackIcon" class="text-22px text-white" />
+            </div>
+            <div>
+              <div class="text-18px font-bold">{{ feedbackTitle }}</div>
+              <div class="text-13px mt-2px" :class="answerResult?.isCorrect ? 'text-green-700' : 'text-red-700'">
+                {{ answerResult?.isCorrect ? '太棒了！答对了' : '答错了，再接再厉' }}
+              </div>
+            </div>
           </div>
-          <div class="space-y-8px">
-            <div><span class="font-medium">正确答案：</span>{{ currentQuestion?.correctAnswer }}</div>
-            <div><span class="font-medium">答案解析：</span>{{ currentQuestion?.analysis }}</div>
+
+          <!-- 答案详情 -->
+          <div class="space-y-12px mb-16px">
+            <div class="flex items-start gap-8px">
+              <span class="font-bold text-15px min-w-80px">正确答案：</span>
+              <span class="text-15px font-medium text-green-700 bg-green-100 px-12px py-4px rounded-6px">{{ currentQuestion?.correctAnswer }}</span>
+            </div>
+            <div class="flex items-start gap-8px">
+              <span class="font-bold text-15px min-w-80px">答案解析：</span>
+              <span class="text-14px leading-relaxed" :class="answerResult?.isCorrect ? 'text-green-800' : 'text-red-800'">{{ currentQuestion?.analysis || '暂无解析' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部按钮导航栏 -->
+        <div class="mt-32px pt-24px border-t border-gray-200">
+          <div class="flex items-center justify-between max-w-600px mx-auto">
+            <!-- 上一题按钮 -->
+            <el-button
+              size="large"
+              :disabled="isFirstQuestion"
+              class="w-140px h-48px"
+              @click="handlePrev"
+            >
+              <Icon icon="ep:arrow-left-bold" class="mr-6px" />
+              上一题
+            </el-button>
+
+            <!-- 中间状态显示 -->
+            <div v-if="!showFeedback" class="flex items-center gap-8px">
+              <span class="text-14px text-gray-500">
+                {{ selectedAnswer ? '已选择：' + selectedAnswer : '请选择答案' }}
+              </span>
+            </div>
+            <div v-else class="flex items-center gap-8px">
+              <el-tag :type="answerResult?.isCorrect ? 'success' : 'danger'" size="small" effect="dark">
+                {{ answerResult?.isCorrect ? '✓ 回答正确' : '✗ 回答错误' }}
+              </el-tag>
+            </div>
+
+            <!-- 提交答案 / 下一题按钮 -->
+            <el-button
+              v-if="!showFeedback"
+              type="primary"
+              size="large"
+              :disabled="!canSubmit"
+              class="w-180px h-48px font-bold shadow-md"
+              @click="handleSubmit"
+            >
+              <Icon icon="ep:check" class="mr-6px" />
+              提交答案
+            </el-button>
+            <el-button
+              v-else
+              :type="isLastQuestion ? 'success' : 'primary'"
+              size="large"
+              class="w-180px h-48px font-bold shadow-md"
+              @click="handleNextOrComplete"
+            >
+              <Icon :icon="isLastQuestion ? 'ep:check' : 'ep:arrow-right-bold'" class="mr-6px" />
+              {{ isLastQuestion ? '完成练习' : '下一题' }}
+            </el-button>
           </div>
         </div>
       </div>
@@ -162,6 +230,8 @@ const questionTypeTag = computed(() => {
   }
 })
 
+const isFirstQuestion = computed(() => currentIndex.value === 0)
+
 const isLastQuestion = computed(() => {
   return currentIndex.value === (exerciseDetail.value?.questions?.length || 0) - 1
 })
@@ -263,28 +333,56 @@ const handleSubmit = async () => {
     question.correctAnswer = res.correctAnswer
     question.analysis = res.analysis
 
-    if (res.isCompleted || isLastQuestion.value) {
-      // 最后一题，完成练习
-      setTimeout(() => {
-        handleComplete()
-      }, 1500)
-    } else {
-      // 自动下一题
-      setTimeout(() => {
-        handleNext()
-      }, 1500)
-    }
+    // 不再自动切换，改为手动点击按钮切换
   } catch (error) {
     ElMessage.error('提交答案失败')
+  }
+}
+
+const handlePrev = () => {
+  if (isFirstQuestion.value) return
+  currentIndex.value--
+  // 恢复上一题的作答状态
+  const prevQuestion = exerciseDetail.value?.questions?.[currentIndex.value]
+  if (prevQuestion) {
+    const answered = answeredQuestions.value[prevQuestion.id]
+    if (answered) {
+      selectedAnswer.value = answered.userAnswer
+      showFeedback.value = true
+      answerResult.value = { isCorrect: answered.isCorrect }
+    } else {
+      selectedAnswer.value = ''
+      showFeedback.value = false
+      answerResult.value = undefined
+    }
   }
 }
 
 const handleNext = () => {
   if (isLastQuestion.value) return
   currentIndex.value++
-  selectedAnswer.value = ''
-  showFeedback.value = false
-  answerResult.value = undefined
+  // 检查下一题是否已作答
+  const nextQuestion = exerciseDetail.value?.questions?.[currentIndex.value]
+  if (nextQuestion) {
+    const answered = answeredQuestions.value[nextQuestion.id]
+    if (answered) {
+      selectedAnswer.value = answered.userAnswer
+      showFeedback.value = true
+      answerResult.value = { isCorrect: answered.isCorrect }
+    } else {
+      selectedAnswer.value = ''
+      showFeedback.value = false
+      answerResult.value = undefined
+    }
+  }
+}
+
+const handleNextOrComplete = () => {
+  if (isLastQuestion.value) {
+    handleComplete()
+  } else {
+    handleNext()
+  }
 }
 
 const handleComplete = async () => {

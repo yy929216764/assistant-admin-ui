@@ -66,17 +66,17 @@ export const WrongBookApi = {
   // ==================== 阶段三新增：错题分析与练习接口 ====================
 
   // AI错因分析
-  analyzeWrongBook: async (wrongBookId: number, modelId?: number) => {
+  analyzeWrongBook: async (wrongBookId: number, modelId?: number): Promise<string> => {
     return await request.post({ url: `/study/wrong-book/analyze`, data: { wrongBookId, modelId } })
   },
 
   // 标记错题已掌握
-  masterWrongBook: async (id: number) => {
+  masterWrongBook: async (id: number): Promise<boolean> => {
     return await request.post({ url: `/study/wrong-book/master`, params: { id } })
   },
 
   // 从错题生成新练习
-  retryWrongBook: async (wrongBookIds: number[]) => {
+  retryWrongBook: async (wrongBookIds: number[]): Promise<number> => {
     return await request.post({ url: `/study/wrong-book/retry`, data: { wrongBookIds } })
   },
 }

@@ -280,7 +280,7 @@ const handleRetry = async () => {
 }
 
 const handleBack = () => {
-  router.push('/study/wrongbook')
+  router.push('/study/wrong-book')
 }
 
 // 加载错题详情

@@ -154,7 +154,7 @@ const handleBack = () => {
 }
 
 const handleViewWrongBook = () => {
-  router.push('/study/wrongbook')
+  router.push('/study/wrong-book')
 }
 
 const handleRetry = () => {

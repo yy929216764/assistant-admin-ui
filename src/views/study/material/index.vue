@@ -24,12 +24,12 @@
           clearable
           class="!w-240px"
         >
-          <el-option label="PDF" :value="1" />
-          <el-option label="Word" :value="2" />
-          <el-option label="Markdown" :value="3" />
-          <el-option label="文本" :value="4" />
-          <el-option label="视频" :value="5" />
-          <el-option label="其他" :value="6" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.MATERIAL_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="同步状态" prop="syncStatus">
@@ -39,22 +39,13 @@
           clearable
           class="!w-240px"
         >
-          <el-option label="待同步" :value="0" />
-          <el-option label="同步中" :value="1" />
-          <el-option label="同步成功" :value="2" />
-          <el-option label="同步失败" :value="3" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.SYNC_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -83,7 +74,7 @@
             @click="handleSyncBatch"
             v-hasPermi="['study:material:update']"
         >
-          <Icon icon="ep:upload" class="mr-5px" /> 批量同步到知识库
+          <Icon icon="ep:upload" class="mr-5px" /> 批量同步
         </el-button>
         <el-button
             type="danger"
@@ -110,15 +101,10 @@
     >
     <el-table-column type="selection" width="55" />
       <el-table-column label="资料编号" align="center" prop="id" width="80" />
-      <el-table-column label="资料名称" align="center" prop="materialName" min-width="150" />
+      <el-table-column label="资料名称" align="center" prop="materialName" min-width="200" />
       <el-table-column label="资料类型" align="center" prop="materialType" width="100">
         <template #default="scope">
-          <el-tag v-if="scope.row.materialType === 1" type="primary">PDF</el-tag>
-          <el-tag v-else-if="scope.row.materialType === 2" type="success">Word</el-tag>
-          <el-tag v-else-if="scope.row.materialType === 3" type="info">Markdown</el-tag>
-          <el-tag v-else-if="scope.row.materialType === 4">文本</el-tag>
-          <el-tag v-else-if="scope.row.materialType === 5" type="warning">视频</el-tag>
-          <el-tag v-else type="danger">其他</el-tag>
+          <dict-tag :type="DICT_TYPE.MATERIAL_TYPE" :value="scope.row.materialType" />
         </template>
       </el-table-column>
       <el-table-column label="文件大小" align="center" prop="fileSize" width="100">
@@ -134,23 +120,9 @@
       </el-table-column>
       <el-table-column label="同步状态" align="center" prop="syncStatus" width="100">
         <template #default="scope">
-          <el-tag v-if="scope.row.syncStatus === 0" type="info">待同步</el-tag>
-          <el-tag v-else-if="scope.row.syncStatus === 1" type="warning">同步中</el-tag>
-          <el-tag v-else-if="scope.row.syncStatus === 2" type="success">同步成功</el-tag>
-          <el-tag v-else-if="scope.row.syncStatus === 3" type="danger">
-            <el-tooltip :content="scope.row.syncErrorMsg || '同步失败'" placement="top">
-              <span>同步失败</span>
-            </el-tooltip>
-          </el-tag>
+          <dict-tag :type="DICT_TYPE.SYNC_STATUS" :value="scope.row.syncStatus" />
         </template>
       </el-table-column>
-      <el-table-column
-        label="最近同步时间"
-        align="center"
-        prop="syncTime"
-        :formatter="dateFormatter"
-        width="180px"
-      />
       <el-table-column
         label="创建时间"
         align="center"
@@ -206,6 +178,8 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { MaterialApi, Material } from '@/api/study/material'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import MaterialForm from './MaterialForm.vue'
 
 /** 学习资料 列表 */
@@ -223,7 +197,6 @@ const queryParams = reactive({
   materialName: undefined,
   materialType: undefined,
   syncStatus: undefined,
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中

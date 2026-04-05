@@ -17,98 +17,35 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="课程封面URL" prop="courseCover">
-        <el-input
-          v-model="queryParams.courseCover"
-          placeholder="请输入课程封面URL"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="课程简介" prop="courseIntro">
-        <el-input
-          v-model="queryParams.courseIntro"
-          placeholder="请输入课程简介"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="学习目标" prop="courseTarget">
-        <el-input
-          v-model="queryParams.courseTarget"
-          placeholder="请输入学习目标"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="难度等级 1-初级 2-中级 3-高级" prop="difficultyLevel">
-        <el-input
-          v-model="queryParams.difficultyLevel"
-          placeholder="请输入难度等级 1-初级 2-中级 3-高级"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="状态 0-草稿 1-已发布 2-已下架" prop="status">
+      <el-form-item label="难度等级" prop="difficultyLevel">
         <el-select
-          v-model="queryParams.status"
-          placeholder="请选择状态 0-草稿 1-已发布 2-已下架"
+          v-model="queryParams.difficultyLevel"
+          placeholder="请选择难度等级"
           clearable
           class="!w-240px"
         >
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.COURSE_DIFFICULTY)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="教师用户编号（可空，首版弱化教师角色依赖）" prop="teacherId">
-        <el-input
-          v-model="queryParams.teacherId"
-          placeholder="请输入教师用户编号（可空，首版弱化教师角色依赖）"
+      <el-form-item label="课程状态" prop="status">
+        <el-select
+          v-model="queryParams.status"
+          placeholder="请选择课程状态"
           clearable
-          @keyup.enter="handleQuery"
           class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="AI知识库编号，对应 ai_knowledge.id" prop="aiKnowledgeId">
-        <el-input
-          v-model="queryParams.aiKnowledgeId"
-          placeholder="请输入AI知识库编号，对应 ai_knowledge.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="课程默认问答模型编号，对应 ai_model.id" prop="defaultModelId">
-        <el-input
-          v-model="queryParams.defaultModelId"
-          placeholder="请输入课程默认问答模型编号，对应 ai_model.id"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="排序" prop="sort">
-        <el-input
-          v-model="queryParams.sort"
-          placeholder="请输入排序"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
+        >
+          <el-option
+            v-for="dict in getDictOptions(DICT_TYPE.COURSE_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -154,17 +91,19 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="课程编号" align="center" prop="id" />
-      <el-table-column label="课程名称" align="center" prop="courseName" />
-      <el-table-column label="课程封面URL" align="center" prop="courseCover" />
-      <el-table-column label="课程简介" align="center" prop="courseIntro" />
-      <el-table-column label="学习目标" align="center" prop="courseTarget" />
-      <el-table-column label="难度等级 1-初级 2-中级 3-高级" align="center" prop="difficultyLevel" />
-      <el-table-column label="状态 0-草稿 1-已发布 2-已下架" align="center" prop="status" />
-      <el-table-column label="教师用户编号（可空，首版弱化教师角色依赖）" align="center" prop="teacherId" />
-      <el-table-column label="AI知识库编号，对应 ai_knowledge.id" align="center" prop="aiKnowledgeId" />
-      <el-table-column label="课程默认问答模型编号，对应 ai_model.id" align="center" prop="defaultModelId" />
-      <el-table-column label="排序" align="center" prop="sort" />
+      <el-table-column label="课程编号" align="center" prop="id" width="80" />
+      <el-table-column label="课程名称" align="center" prop="courseName" min-width="150" />
+      <el-table-column label="难度等级" align="center" prop="difficultyLevel" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.COURSE_DIFFICULTY" :value="scope.row.difficultyLevel" />
+        </template>
+      </el-table-column>
+      <el-table-column label="课程状态" align="center" prop="status" width="100">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.COURSE_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
+      <el-table-column label="排序" align="center" prop="sort" width="80" />
       <el-table-column
         label="创建时间"
         align="center"
@@ -172,7 +111,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" min-width="180px">
+      <el-table-column label="操作" align="center" min-width="220px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -192,6 +131,7 @@
           <el-button
             link
             type="warning"
+            :loading="exerciseLoading"
             @click="handleExercise(scope.row)"
           >
             开始练习
@@ -226,6 +166,8 @@ import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { CourseApi, Course } from '@/api/study/course'
 import { ExerciseApi } from '@/api/study/exercise'
+import { DICT_TYPE, getDictOptions } from '@/utils/dict'
+import { DictTag } from '@/components/DictTag'
 import CourseForm from './CourseForm.vue'
 import { useRouter } from 'vue-router'
 
@@ -237,22 +179,15 @@ const { t } = useI18n() // 国际化
 const router = useRouter() // 路由
 
 const loading = ref(true) // 列表的加载中
+const exerciseLoading = ref(false) // 生成练习的加载中
 const list = ref<Course[]>([]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   courseName: undefined,
-  courseCover: undefined,
-  courseIntro: undefined,
-  courseTarget: undefined,
   difficultyLevel: undefined,
   status: undefined,
-  teacherId: undefined,
-  aiKnowledgeId: undefined,
-  defaultModelId: undefined,
-  sort: undefined,
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
@@ -318,19 +253,22 @@ const handleRowCheckboxChange = (records: Course[]) => {
 }
 
 /** AI问答按钮操作 */
-const handleAiChat = async (row: Course) => {
+const handleAiChat = (row: Course) => {
   if (!row.aiKnowledgeId) {
     message.error('该课程未绑定知识库，无法进行AI问答')
     return
   }
   // 跳转到学习问答页面，带上课程ID
-  window.open(`#/study/ai-tutor?courseId=${row.id}`, '_blank')
+  router.push({
+    path: '/study/ai-tutor',
+    query: { courseId: row.id }
+  })
 }
 
 /** 开始练习按钮操作 */
 const handleExercise = async (row: Course) => {
+  exerciseLoading.value = true
   try {
-    message.loading('正在生成练习题目...')
     // 生成练习
     const exerciseId = await ExerciseApi.generateExercise({
       courseId: row.id!,
@@ -342,8 +280,11 @@ const handleExercise = async (row: Course) => {
       path: '/study/exercise/do',
       query: { id: exerciseId }
     })
-  } catch (error) {
-    message.error('生成练习失败')
+  } catch (error: any) {
+    console.error('生成练习失败:', error)
+    message.error('生成练习失败: ' + (error?.message || '未知错误'))
+  } finally {
+    exerciseLoading.value = false
   }
 }
 

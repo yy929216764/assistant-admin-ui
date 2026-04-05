@@ -757,6 +757,31 @@ const remainingRouter: AppRouteRecordRaw[] = [
     },
     children: [
       {
+        path: 'overview',
+        name: 'StudyOverview',
+        component: () => import('@/views/study/overview/index.vue'),
+        meta: {
+          title: '学习概览',
+          hidden: false,
+          noCache: false,
+          canTo: true,
+          icon: 'ep:data-line',
+          activeMenu: '/study/overview'
+        }
+      },
+      {
+        path: 'ai-tutor',
+        name: 'AiTutor',
+        component: () => import('@/views/study/aiTutor/index.vue'),
+        meta: {
+          title: 'AI学习问答',
+          hidden: true,
+          noCache: true,
+          canTo: true,
+          activeMenu: '/study/course'
+        }
+      },
+      {
         path: 'exercise/do',
         name: 'ExerciseDo',
         component: () => import('@/views/study/exercise/do/index.vue'),
@@ -779,7 +804,19 @@ const remainingRouter: AppRouteRecordRaw[] = [
         }
       },
       {
-        path: 'wrongbook/detail',
+        path: 'wrong-book',
+        name: 'WrongBook',
+        component: () => import('@/views/study/wrongbook/index.vue'),
+        meta: {
+          title: '错题本',
+          hidden: true,
+          noCache: true,
+          canTo: true,
+          activeMenu: '/study/course'
+        }
+      },
+      {
+        path: 'wrong-book/detail',
         name: 'WrongBookDetail',
         component: () => import('@/views/study/wrongbook/detail/index.vue'),
         meta: {
@@ -787,7 +824,7 @@ const remainingRouter: AppRouteRecordRaw[] = [
           hidden: true,
           noCache: true,
           canTo: true,
-          activeMenu: '/study/wrongbook'
+          activeMenu: '/study/wrong-book'
         }
       }
     ]

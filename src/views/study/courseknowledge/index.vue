@@ -8,7 +8,7 @@
       :inline="true"
       label-width="68px"
     >
-      <el-form-item label="课程编号" prop="courseId">
+      <el-form-item label="课程" prop="courseId">
         <el-input
           v-model="queryParams.courseId"
           placeholder="请输入课程编号"
@@ -17,51 +17,13 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="所属章节编号" prop="chapterId">
-        <el-input
-          v-model="queryParams.chapterId"
-          placeholder="请输入所属章节编号"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="知识点名称" prop="knowledgePointName">
+      <el-form-item label="知识点" prop="knowledgePointName">
         <el-input
           v-model="queryParams.knowledgePointName"
           placeholder="请输入知识点名称"
           clearable
           @keyup.enter="handleQuery"
           class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="知识点摘要" prop="knowledgePointSummary">
-        <el-input
-          v-model="queryParams.knowledgePointSummary"
-          placeholder="请输入知识点摘要"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="排序" prop="sort">
-        <el-input
-          v-model="queryParams.sort"
-          placeholder="请输入排序"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
         />
       </el-form-item>
       <el-form-item>
@@ -108,12 +70,10 @@
         @selection-change="handleRowCheckboxChange"
     >
     <el-table-column type="selection" width="55" />
-      <el-table-column label="知识点编号" align="center" prop="id" />
-      <el-table-column label="课程编号" align="center" prop="courseId" />
-      <el-table-column label="所属章节编号" align="center" prop="chapterId" />
-      <el-table-column label="知识点名称" align="center" prop="knowledgePointName" />
-      <el-table-column label="知识点摘要" align="center" prop="knowledgePointSummary" />
-      <el-table-column label="排序" align="center" prop="sort" />
+      <el-table-column label="编号" align="center" prop="id" width="80" />
+      <el-table-column label="知识点名称" align="center" prop="knowledgePointName" min-width="200" />
+      <el-table-column label="所属课程" align="center" prop="courseName" width="150" />
+      <el-table-column label="排序" align="center" prop="sort" width="80" />
       <el-table-column
         label="创建时间"
         align="center"
@@ -121,7 +81,7 @@
         :formatter="dateFormatter"
         width="180px"
       />
-      <el-table-column label="操作" align="center" min-width="120px">
+      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -175,11 +135,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   courseId: undefined,
-  chapterId: undefined,
   knowledgePointName: undefined,
-  knowledgePointSummary: undefined,
-  sort: undefined,
-  createTime: [],
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
