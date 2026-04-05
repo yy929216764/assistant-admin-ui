@@ -13,8 +13,25 @@
       <el-form-item label="用户编号" prop="userId">
         <el-input v-model="formData.userId" placeholder="请输入用户编号" />
       </el-form-item>
-      <el-form-item label="课程编号" prop="courseId">
-        <el-input v-model="formData.courseId" placeholder="请输入课程编号" />
+      <el-form-item label="所属课程" prop="courseId">
+        <el-select
+          v-model="formData.courseId"
+          placeholder="请选择或搜索课程"
+          clearable
+          filterable
+          remote
+          :remote-method="fetchCourseList"
+          :loading="courseLoading"
+          style="width: 100%"
+          @focus="fetchCourseList('')"
+        >
+          <el-option
+            v-for="item in courseList"
+            :key="item.id"
+            :label="item.courseName"
+            :value="item.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="章节编号" prop="chapterId">
         <el-input v-model="formData.chapterId" placeholder="请输入章节编号" />
@@ -47,6 +64,7 @@
 </template>
 <script setup lang="ts">
 import { AiConversationRefApi, AiConversationRef } from '@/api/study/aiconversationref'
+import { CourseApi } from '@/api/study/course'
 
 /** 学习场景与AI对话映射 表单 */
 defineOptions({ name: 'AiConversationRefForm' })
@@ -77,6 +95,23 @@ const formRules = reactive({
   status: [{ required: true, message: '状态 0-关闭 1-有效不能为空', trigger: 'blur' }],
 })
 const formRef = ref() // 表单 Ref
+const courseList = ref<any[]>([]) // 课程列表
+const courseLoading = ref(false)
+
+// 搜索课程列表
+const fetchCourseList = async (query: string) => {
+  courseLoading.value = true
+  try {
+    const data = await CourseApi.getCoursePage({
+      pageNo: 1,
+      pageSize: 20,
+      courseName: query
+    })
+    courseList.value = data.list
+  } finally {
+    courseLoading.value = false
+  }
+}
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {

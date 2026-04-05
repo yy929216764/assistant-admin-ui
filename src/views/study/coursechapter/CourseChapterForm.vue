@@ -7,8 +7,25 @@
       label-width="100px"
       v-loading="formLoading"
     >
-      <el-form-item label="课程编号" prop="courseId">
-        <el-input v-model="formData.courseId" placeholder="请输入课程编号" />
+      <el-form-item label="所属课程" prop="courseId">
+        <el-select
+          v-model="formData.courseId"
+          placeholder="请选择或搜索课程"
+          clearable
+          filterable
+          remote
+          :remote-method="fetchCourseList"
+          :loading="courseLoading"
+          style="width: 100%"
+          @focus="fetchCourseList('')"
+        >
+          <el-option
+            v-for="item in courseList"
+            :key="item.id"
+            :label="item.courseName"
+            :value="item.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="父章节编号，0-顶级" prop="parentId">
         <el-input v-model="formData.parentId" placeholder="请输入父章节编号，0-顶级" />
@@ -31,6 +48,7 @@
 </template>
 <script setup lang="ts">
 import { CourseChapterApi, CourseChapter } from '@/api/study/coursechapter'
+import { CourseApi } from '@/api/study/course'
 
 /** 课程章节 表单 */
 defineOptions({ name: 'CourseChapterForm' })
@@ -58,6 +76,23 @@ const formRules = reactive({
   chapterLevel: [{ required: true, message: '章节层级 1-章 2-节不能为空', trigger: 'blur' }],
 })
 const formRef = ref() // 表单 Ref
+const courseList = ref<any[]>([]) // 课程列表
+const courseLoading = ref(false)
+
+// 搜索课程列表
+const fetchCourseList = async (query: string) => {
+  courseLoading.value = true
+  try {
+    const data = await CourseApi.getCoursePage({
+      pageNo: 1,
+      pageSize: 20,
+      courseName: query
+    })
+    courseList.value = data.list
+  } finally {
+    courseLoading.value = false
+  }
+}
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {

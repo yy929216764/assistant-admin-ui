@@ -68,8 +68,8 @@ const getUserInfo = async () => {
 watch(
   () => userStore.getUser.avatar,
   (newAvatar) => {
-    if (newAvatar && userInfo.value) {
-      userInfo.value.avatar = newAvatar
+    if (userInfo.value) {
+      userInfo.value.avatar = newAvatar || userStore.getDefaultAvatar
     }
   }
 )

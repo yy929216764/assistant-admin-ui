@@ -83,11 +83,11 @@ const formRef = ref<FormExpose>() // 表单 Ref
 watch(
   () => userStore.getUser.avatar,
   (newAvatar) => {
-    if (newAvatar && formRef.value) {
+    if (formRef.value) {
       // 直接更新表单模型中的头像字段
       const formModel = formRef.value.formModel
       if (formModel) {
-        formModel.avatar = newAvatar
+        formModel.avatar = newAvatar || userStore.getDefaultAvatar
       }
     }
   }

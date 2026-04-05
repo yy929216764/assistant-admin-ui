@@ -2,7 +2,7 @@
 import { useValidator } from '@/hooks/web/useValidator'
 import { useDesign } from '@/hooks/web/useDesign'
 import { useLockStore } from '@/store/modules/lock'
-import avatarImg from '@/assets/svgs/avatar-default.svg'
+// 默认头像通过 store.getDefaultAvatar 获取
 import { useUserStore } from '@/store/modules/user'
 
 const { getPrefixCls } = useDesign()
@@ -21,7 +21,7 @@ const props = defineProps({
 })
 
 const userStore = useUserStore()
-const avatar = computed(() => userStore.user.avatar || avatarImg)
+const avatar = computed(() => userStore.getUser.avatar || userStore.getDefaultAvatar)
 const userName = computed(() => userStore.user.nickname ?? 'Admin')
 
 const emit = defineEmits(['update:modelValue'])

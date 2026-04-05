@@ -7,11 +7,44 @@
       label-width="100px"
       v-loading="formLoading"
     >
-      <el-form-item label="课程编号" prop="courseId">
-        <el-input v-model="formData.courseId" placeholder="请输入课程编号" />
+      <el-form-item label="所属课程" prop="courseId">
+        <el-select
+          v-model="formData.courseId"
+          placeholder="请选择或搜索课程"
+          clearable
+          filterable
+          remote
+          :remote-method="fetchCourseList"
+          :loading="courseLoading"
+          style="width: 100%"
+          @change="handleCourseChange"
+          @focus="fetchCourseList('')"
+        >
+          <el-option
+            v-for="item in courseList"
+            :key="item.id"
+            :label="item.courseName"
+            :value="item.id"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="所属章节编号" prop="chapterId">
-        <el-input v-model="formData.chapterId" placeholder="请输入所属章节编号" />
+      <el-form-item label="所属章节" prop="chapterId">
+        <el-select
+          v-model="formData.chapterId"
+          placeholder="请先选择课程"
+          clearable
+          filterable
+          :disabled="!formData.courseId"
+          :loading="chapterLoading"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="item in chapterList"
+            :key="item.id"
+            :label="item.chapterName"
+            :value="item.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="知识点名称" prop="knowledgePointName">
         <el-input v-model="formData.knowledgePointName" placeholder="请输入知识点名称" />
@@ -31,6 +64,8 @@
 </template>
 <script setup lang="ts">
 import { CourseKnowledgeApi, CourseKnowledge } from '@/api/study/courseknowledge'
+import { CourseApi } from '@/api/study/course'
+import { CourseChapterApi } from '@/api/study/coursechapter'
 
 /** 课程知识点 表单 */
 defineOptions({ name: 'CourseKnowledgeForm' })
@@ -56,6 +91,43 @@ const formRules = reactive({
   sort: [{ required: true, message: '排序不能为空', trigger: 'blur' }],
 })
 const formRef = ref() // 表单 Ref
+const courseList = ref<any[]>([]) // 课程列表
+const chapterList = ref<any[]>([]) // 章节列表
+const courseLoading = ref(false)
+const chapterLoading = ref(false)
+
+// 搜索课程列表
+const fetchCourseList = async (query: string) => {
+  courseLoading.value = true
+  try {
+    const data = await CourseApi.getCoursePage({
+      pageNo: 1,
+      pageSize: 20,
+      courseName: query
+    })
+    courseList.value = data.list
+  } finally {
+    courseLoading.value = false
+  }
+}
+
+// 根据课程加载章节列表
+const handleCourseChange = async (courseId: number) => {
+  formData.value.chapterId = undefined
+  chapterList.value = []
+  if (!courseId) return
+  chapterLoading.value = true
+  try {
+    const data = await CourseChapterApi.getCourseChapterPage({
+      pageNo: 1,
+      pageSize: 100,
+      courseId: courseId
+    })
+    chapterList.value = data.list
+  } finally {
+    chapterLoading.value = false
+  }
+}
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -67,7 +139,12 @@ const open = async (type: string, id?: number) => {
   if (id) {
     formLoading.value = true
     try {
-      formData.value = await CourseKnowledgeApi.getCourseKnowledge(id)
+      const data = await CourseKnowledgeApi.getCourseKnowledge(id)
+      formData.value = data
+      // 加载课程和章节信息
+      if (data.courseId) {
+        await handleCourseChange(data.courseId)
+      }
     } finally {
       formLoading.value = false
     }

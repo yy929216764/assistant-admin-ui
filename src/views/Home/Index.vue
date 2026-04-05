@@ -6,7 +6,7 @@
           <el-col :xl="12" :lg="12" :md="12" :sm="24" :xs="24">
             <div class="flex items-center">
               <el-avatar :src="avatar" :size="70" class="mr-16px">
-                <img src="@/assets/svgs/avatar-default.svg" alt="" />
+                <img :src="userStore.getDefaultAvatar" alt="" />
               </el-avatar>
               <div>
                 <div class="text-20px">
@@ -185,6 +185,7 @@ import { set } from 'lodash-es'
 import { EChartsOption } from 'echarts'
 import { formatTime } from '@/utils'
 
+import { computed } from 'vue'
 import { useUserStore } from '@/store/modules/user'
 // import { useWatermark } from '@/hooks/web/useWatermark'
 import type { WorkplaceTotal, Project, Notice, Shortcut } from './types'
@@ -198,7 +199,7 @@ const router = useRouter()
 const userStore = useUserStore()
 // const { setWatermark } = useWatermark()
 const loading = ref(true)
-const avatar = userStore.getUser.avatar
+const avatar = computed(() => userStore.getUser.avatar || userStore.getDefaultAvatar)
 const username = userStore.getUser.nickname
 const pieOptionsData = reactive<EChartsOption>(pieOptions) as EChartsOption
 // 获取统计数

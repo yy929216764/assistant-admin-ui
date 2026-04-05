@@ -3,6 +3,9 @@ import { defineStore } from 'pinia'
 import { getAccessToken, removeToken } from '@/utils/auth'
 import { CACHE_KEY, useCache, deleteUserCache } from '@/hooks/web/useCache'
 import { getInfo, loginOut } from '@/api/login'
+import studentAvatarImg from '@/assets/svgs/avatar-student.svg'
+import teacherAvatarImg from '@/assets/svgs/avatar-teacher.svg'
+import defaultAvatarImg from '@/assets/svgs/avatar-default.svg'
 
 const { wsCache } = useCache()
 
@@ -11,6 +14,7 @@ interface UserVO {
   avatar: string
   nickname: string
   deptId: number
+  userType?: number // 用户类型：1-学生，2-教师/管理员
 }
 
 interface UserInfoVO {
@@ -45,6 +49,40 @@ export const useUserStore = defineStore('admin-user', {
     },
     getUser(): UserVO {
       return this.user
+    },
+    // 根据角色获取默认头像
+    getDefaultAvatar(): string {
+      // 判断是否为学生的逻辑：
+      // 1. roles包含 'student' 或 '学生'
+      // 2. userType === 1 (学生类型)
+      const isStudent = this.roles.some(
+        (role: string) =>
+          role.toLowerCase().includes('student') ||
+          role.includes('学生') ||
+          role === 'student'
+      ) || this.user?.userType === 1
+
+      if (isStudent) {
+        return studentAvatarImg
+      }
+
+      // 判断是否为教师或管理员
+      const isTeacherOrAdmin = this.roles.some(
+        (role: string) =>
+          role.toLowerCase().includes('teacher') ||
+          role.toLowerCase().includes('admin') ||
+          role.includes('教师') ||
+          role.includes('管理员') ||
+          role === 'teacher' ||
+          role === 'admin'
+      ) || this.user?.userType === 2
+
+      if (isTeacherOrAdmin) {
+        return teacherAvatarImg
+      }
+
+      // 默认返回通用头像
+      return defaultAvatarImg
     }
   },
   actions: {

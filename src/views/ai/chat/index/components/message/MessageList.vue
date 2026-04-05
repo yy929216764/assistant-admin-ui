@@ -122,7 +122,6 @@ import { ArrowDownBold, Edit, RefreshRight } from '@element-plus/icons-vue'
 import { ChatMessageApi, ChatMessageVO } from '@/api/ai/chat/message'
 import { ChatConversationVO } from '@/api/ai/chat/conversation'
 import { useUserStore } from '@/store/modules/user'
-import userAvatarDefaultImg from '@/assets/svgs/avatar-default.svg'
 import roleAvatarDefaultImg from '@/assets/ai/gpt.svg'
 
 const message = useMessage() // 消息弹窗
@@ -133,7 +132,7 @@ const userStore = useUserStore()
 const messageContainer: any = ref(null)
 const isScrolling = ref(false) //用于判断用户是否在滚动
 
-const userAvatar = computed(() => userStore.user.avatar || userAvatarDefaultImg)
+const userAvatar = computed(() => userStore.user.avatar || userStore.getDefaultAvatar)
 const roleAvatar = computed(() => props.conversation.roleAvatar ?? roleAvatarDefaultImg)
 
 // 定义 props

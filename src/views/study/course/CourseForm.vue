@@ -12,7 +12,16 @@
       </el-form-item>
 
       <el-form-item label="课程封面" prop="courseCover">
-        <el-input v-model="formData.courseCover" placeholder="请输入课程封面URL" />
+        <UploadImg
+          v-model="formData.courseCover"
+          :drag="false"
+          width="200px"
+          height="150px"
+          directory="course/cover"
+        />
+        <div class="form-tip text-gray-400 text-xs mt-1">
+          建议尺寸：800x600像素，支持jpg、png格式
+        </div>
       </el-form-item>
 
       <el-form-item label="课程简介" prop="courseIntro">
@@ -68,20 +77,9 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="默认模型" prop="defaultModelId">
-        <el-select
-          v-model="formData.defaultModelId"
-          placeholder="请选择默认问答模型"
-          clearable
-          class="!w-full"
-        >
-          <el-option
-            v-for="item in modelList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
+      <!-- 默认模型隐藏，从配置文件读取 -->
+      <el-form-item v-if="false" label="默认模型" prop="defaultModelId">
+        <el-input v-model="formData.defaultModelId" />
       </el-form-item>
 
       <el-form-item label="排序" prop="sort">
@@ -101,7 +99,7 @@
 <script setup lang="ts">
 import { CourseApi, Course } from '@/api/study/course'
 import { KnowledgeApi } from '@/api/ai/knowledge/knowledge'
-import { ModelApi } from '@/api/ai/model/model'
+import { UploadImg } from '@/components/UploadFile'
 
 /** 课程 表单 */
 defineOptions({ name: 'CourseForm' })
@@ -115,7 +113,9 @@ const formLoading = ref(false) // 表单的加载中
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 
 const knowledgeList = ref<any[]>([]) // 知识库列表
-const modelList = ref<any[]>([]) // 模型列表
+
+// 从环境变量获取默认模型ID
+const defaultModelId = import.meta.env.VITE_APP_COURSE_DEFAULT_MODEL_ID || undefined
 
 const formData = ref({
   id: undefined,
@@ -149,16 +149,6 @@ const getKnowledgeList = async () => {
   }
 }
 
-/** 获取模型列表 */
-const getModelList = async () => {
-  try {
-    const data = await ModelApi.getModelPage({ pageNo: 1, pageSize: 100 })
-    modelList.value = data.list || []
-  } catch (error) {
-    console.error('获取模型列表失败', error)
-  }
-}
-
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
   dialogVisible.value = true
@@ -166,8 +156,8 @@ const open = async (type: string, id?: number) => {
   formType.value = type
   resetForm()
 
-  // 加载知识库和模型列表
-  await Promise.all([getKnowledgeList(), getModelList()])
+  // 加载知识库列表
+  await getKnowledgeList()
 
   // 修改时，设置数据
   if (id) {
@@ -202,7 +192,11 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
-    const data = formData.value as unknown as Course
+    const data = { ...formData.value } as unknown as Course
+    // 如果没有设置默认模型，使用配置文件中的默认值
+    if (!data.defaultModelId && defaultModelId) {
+      data.defaultModelId = Number(defaultModelId)
+    }
     if (formType.value === 'create') {
       await CourseApi.createCourse(data)
       message.success(t('common.createSuccess'))

@@ -4,6 +4,7 @@ import { ElMenu, ElScrollbar } from 'element-plus'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRenderMenuItem } from './components/useRenderMenuItem'
+import { watch } from 'vue'
 import { isUrl } from '@/utils/is'
 import { useDesign } from '@/hooks/web/useDesign'
 import { LayoutType } from '@/types/layout'
@@ -41,13 +42,27 @@ export default defineComponent({
       }
     })
 
-    const routers = computed(() =>
-      unref(layout) === 'cutMenu' ? permissionStore.getMenuTabRouters : permissionStore.getRouters
-    )
+    const routers = computed(() => {
+      const routes =
+        unref(layout) === 'cutMenu' ? permissionStore.getMenuTabRouters : permissionStore.getRouters
+      // 确保返回的数组不为空，避免菜单渲染问题
+      return routes || []
+    })
 
     const collapse = computed(() => appStore.getCollapse)
 
     const uniqueOpened = computed(() => appStore.getUniqueOpened)
+
+    // 用于强制重新渲染菜单的key
+    const menuKey = ref(0)
+
+    // 监听 collapse 变化，强制重新渲染菜单以解决 Element Plus 菜单展开问题
+    watch(collapse, () => {
+      menuKey.value++
+    })
+
+    // 将 useRenderMenuItem 移到 render 外部，避免每次渲染都创建新实例
+    const { renderMenuItem } = useRenderMenuItem()
 
     const activeMenu = computed(() => {
       const { meta, path } = unref(currentRoute)
@@ -81,6 +96,7 @@ export default defineComponent({
     const renderMenu = () => {
       return (
         <ElMenu
+          key={menuKey.value}
           defaultActive={unref(activeMenu)}
           mode={unref(menuMode)}
           collapse={
@@ -98,10 +114,7 @@ export default defineComponent({
           onSelect={menuSelect}
         >
           {{
-            default: () => {
-              const { renderMenuItem } = useRenderMenuItem(unref(menuMode))
-              return renderMenuItem(unref(routers))
-            }
+            default: () => renderMenuItem(unref(routers))
           }}
         </ElMenu>
       )

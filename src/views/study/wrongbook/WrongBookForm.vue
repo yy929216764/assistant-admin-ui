@@ -10,8 +10,25 @@
       <el-form-item label="用户编号" prop="userId">
         <el-input v-model="formData.userId" placeholder="请输入用户编号" />
       </el-form-item>
-      <el-form-item label="课程编号" prop="courseId">
-        <el-input v-model="formData.courseId" placeholder="请输入课程编号" />
+      <el-form-item label="所属课程" prop="courseId">
+        <el-select
+          v-model="formData.courseId"
+          placeholder="请选择或搜索课程"
+          clearable
+          filterable
+          remote
+          :remote-method="fetchCourseList"
+          :loading="courseLoading"
+          style="width: 100%"
+          @focus="fetchCourseList('')"
+        >
+          <el-option
+            v-for="item in courseList"
+            :key="item.id"
+            :label="item.courseName"
+            :value="item.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="知识点编号" prop="knowledgePointId">
         <el-input v-model="formData.knowledgePointId" placeholder="请输入知识点编号" />
@@ -90,6 +107,7 @@
 </template>
 <script setup lang="ts">
 import { WrongBookApi, WrongBook } from '@/api/study/wrongbook'
+import { CourseApi } from '@/api/study/course'
 
 /** 错题本 表单 */
 defineOptions({ name: 'WrongBookForm' })
@@ -134,6 +152,23 @@ const formRules = reactive({
   lastWrongTime: [{ required: true, message: '最后错误时间不能为空', trigger: 'blur' }],
 })
 const formRef = ref() // 表单 Ref
+const courseList = ref<any[]>([]) // 课程列表
+const courseLoading = ref(false)
+
+// 搜索课程列表
+const fetchCourseList = async (query: string) => {
+  courseLoading.value = true
+  try {
+    const data = await CourseApi.getCoursePage({
+      pageNo: 1,
+      pageSize: 20,
+      courseName: query
+    })
+    courseList.value = data.list
+  } finally {
+    courseLoading.value = false
+  }
+}
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {

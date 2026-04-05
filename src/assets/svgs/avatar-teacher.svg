@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 教师/管理员头像 - 紫色调 -->
+  <defs>
+    <linearGradient id="teacherGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- 背景圆形 -->
+  <circle cx="50" cy="50" r="48" fill="url(#teacherGrad)" stroke="#e0e0e0" stroke-width="2"/>
+
+  <!-- 领口 -->
+  <path d="M30 85 L40 65 L50 75 L60 65 L70 85 Z" fill="#fff"/>
+  <!-- 领带 -->
+  <path d="M47 75 L53 75 L52 85 L48 85 Z" fill="#ffd700"/>
+  <polygon points="45,68 55,68 53,75 47,75" fill="#ffd700"/>
+
+  <!-- 人脸轮廓 -->
+  <ellipse cx="50" cy="58" rx="20" ry="22" fill="#ffe0bd"/>
+
+  <!-- 头发 -->
+  <path d="M30 55 Q30 35 50 35 Q70 35 70 55 Q70 50 65 48 Q50 45 35 48 Q30 50 30 55" fill="#4a4a4a"/>
+  <path d="M30 55 Q28 45 35 40 Q50 30 65 40 Q72 45 70 55" fill="none" stroke="#4a4a4a" stroke-width="3"/>
+
+  <!-- 眼睛 -->
+  <circle cx="43" cy="58" r="2.5" fill="#333"/>
+  <circle cx="57" cy="58" r="2.5" fill="#333"/>
+
+  <!-- 眉毛 -->
+  <path d="M40 53 Q43 51 46 53" fill="none" stroke="#4a4a4a" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M54 53 Q57 51 60 53" fill="none" stroke="#4a4a4a" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 微笑 -->
+  <path d="M45 68 Q50 72 55 68" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 教鞭/笔装饰 -->
+  <line x1="72" y1="40" x2="82" y2="25" stroke="#ffd700" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="82" cy="25" r="3" fill="#ffd700"/>
+</svg>

@@ -2,7 +2,7 @@
   <div class="welcome-header-admin">
     <div class="welcome-content">
       <el-avatar :size="64" :src="avatar" class="avatar">
-        <img src="@/assets/svgs/avatar-default.svg" alt="avatar" />
+        <img :src="userStore.getDefaultAvatar" alt="avatar" />
       </el-avatar>
       <div class="welcome-text">
         <div class="welcome-title">

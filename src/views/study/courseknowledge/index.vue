@@ -9,13 +9,25 @@
       label-width="68px"
     >
       <el-form-item label="课程" prop="courseId">
-        <el-input
+        <el-select
           v-model="queryParams.courseId"
-          placeholder="请输入课程编号"
+          placeholder="请选择或搜索课程"
           clearable
-          @keyup.enter="handleQuery"
+          filterable
+          remote
+          :remote-method="fetchCourseList"
+          :loading="courseLoading"
           class="!w-240px"
-        />
+          @change="handleQuery"
+          @focus="fetchCourseList('')"
+        >
+          <el-option
+            v-for="item in courseList"
+            :key="item.id"
+            :label="item.courseName"
+            :value="item.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="知识点" prop="knowledgePointName">
         <el-input
@@ -120,6 +132,7 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { CourseKnowledgeApi, CourseKnowledge } from '@/api/study/courseknowledge'
+import { CourseApi } from '@/api/study/course'
 import CourseKnowledgeForm from './CourseKnowledgeForm.vue'
 
 /** 课程知识点 列表 */
@@ -139,6 +152,8 @@ const queryParams = reactive({
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+const courseList = ref<any[]>([]) // 课程列表（用于下拉选择）
+const courseLoading = ref(false) // 课程下拉加载中
 
 /** 查询列表 */
 const getList = async () => {
@@ -212,6 +227,21 @@ const handleExport = async () => {
   } catch {
   } finally {
     exportLoading.value = false
+  }
+}
+
+// 课程下拉搜索
+const fetchCourseList = async (query: string) => {
+  courseLoading.value = true
+  try {
+    const data = await CourseApi.getCoursePage({
+      pageNo: 1,
+      pageSize: 20,
+      courseName: query
+    })
+    courseList.value = data.list
+  } finally {
+    courseLoading.value = false
   }
 }
 

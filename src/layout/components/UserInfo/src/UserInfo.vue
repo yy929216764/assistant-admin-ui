@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ElMessageBox } from 'element-plus'
 
-import avatarImg from '@/assets/svgs/avatar-default.svg'
+// 默认头像通过 store.getDefaultAvatar 获取
 import { useDesign } from '@/hooks/web/useDesign'
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import { useUserStore } from '@/store/modules/user'
@@ -23,7 +23,7 @@ const { getPrefixCls } = useDesign()
 
 const prefixCls = getPrefixCls('user-info')
 
-const avatar = computed(() => userStore.user.avatar || avatarImg)
+const avatar = computed(() => userStore.getUser.avatar || userStore.getDefaultAvatar)
 const userName = computed(() => userStore.user.nickname ?? 'Admin')
 
 // 锁定屏幕
