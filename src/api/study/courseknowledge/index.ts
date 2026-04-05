@@ -47,4 +47,9 @@ export const CourseKnowledgeApi = {
   exportCourseKnowledge: async (params) => {
     return await request.download({ url: `/study/course-knowledge/export-excel`, params })
   },
+
+  // 查询简单知识点列表（用于下拉选择）
+  getSimpleKnowledgeList: async (params?: { courseId?: number; chapterId?: number }) => {
+    return await request.get({ url: `/study/course-knowledge/simple-list`, params })
+  },
 }

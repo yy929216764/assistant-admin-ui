@@ -20,6 +20,7 @@ export interface StudyAiConversation {
   sceneType: number
   messageCount: number
   createTime: string
+  updateTime?: string  // 最后更新时间（最后消息时间）
 }
 
 export interface StudyAiChatSendReq {

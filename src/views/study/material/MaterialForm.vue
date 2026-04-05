@@ -37,22 +37,14 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item label="知识库" prop="aiKnowledgeId">
-        <el-select
-          v-model="formData.aiKnowledgeId"
-          placeholder="请选择知识库（用于AI问答）"
-          clearable
-          class="!w-full"
-        >
-          <el-option
-            v-for="item in knowledgeList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
-        <div class="form-tip text-gray-400 text-xs mt-1">
-          绑定知识库后，资料上传将自动向量化，支持AI问答检索
+      <el-form-item label="AI问答">
+        <div v-if="courseInfo?.aiEnabled" class="flex items-center text-green-600 text-sm">
+          <Icon icon="ep:check" class="mr-1" />
+          已关联课程知识库，资料将自动用于AI问答
+        </div>
+        <div v-else class="flex items-center text-gray-400 text-sm">
+          <Icon icon="ep:info-filled" class="mr-1" />
+          当前课程未启用AI功能，资料仅做存储
         </div>
       </el-form-item>
 
@@ -78,7 +70,7 @@
 <script setup lang="ts">
 import { MaterialApi, Material } from '@/api/study/material'
 import { CourseApi } from '@/api/study/course'
-import { KnowledgeApi } from '@/api/ai/knowledge/knowledge'
+import { Icon } from '@/components/Icon'
 import UploadFile from '@/components/UploadFile/src/UploadFile.vue'
 
 /** 学习资料 表单 */
@@ -93,7 +85,7 @@ const formLoading = ref(false) // 表单的加载中
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 
 const courseList = ref<any[]>([]) // 课程列表
-const knowledgeList = ref<any[]>([]) // 知识库列表
+const courseInfo = ref<any>(null) // 当前选中的课程信息
 
 const formData = ref({
   id: undefined,
@@ -125,23 +117,24 @@ const getCourseList = async () => {
   }
 }
 
-/** 获取知识库列表 */
-const getKnowledgeList = async () => {
-  try {
-    const data = await KnowledgeApi.getKnowledgePage({ pageNo: 1, pageSize: 100 })
-    knowledgeList.value = data.list || []
-  } catch (error) {
-    console.error('获取知识库列表失败', error)
-  }
-}
-
 /** 课程选择变化 */
-const handleCourseChange = (courseId: number) => {
-  if (!courseId) return
-  const course = courseList.value.find(item => item.id === courseId)
-  if (course && course.aiKnowledgeId) {
-    // 如果课程已绑定知识库，自动填充
-    formData.value.aiKnowledgeId = course.aiKnowledgeId
+const handleCourseChange = async (courseId: number) => {
+  if (!courseId) {
+    courseInfo.value = null
+    return
+  }
+  // 获取课程详情，检查是否启用AI
+  try {
+    courseInfo.value = await CourseApi.getCourse(courseId)
+    // 自动填充知识库ID（如果课程已启用AI）
+    if (courseInfo.value.aiEnabled && courseInfo.value.aiKnowledgeId) {
+      formData.value.aiKnowledgeId = courseInfo.value.aiKnowledgeId
+    } else {
+      formData.value.aiKnowledgeId = undefined
+    }
+  } catch (error) {
+    console.error('获取课程信息失败', error)
+    courseInfo.value = null
   }
 }
 
@@ -152,8 +145,8 @@ const open = async (type: string, id?: number) => {
   formType.value = type
   resetForm()
 
-  // 加载课程和知识库列表
-  await Promise.all([getCourseList(), getKnowledgeList()])
+  // 加载课程列表
+  await getCourseList()
 
   // 修改时，设置数据
   if (id) {
@@ -170,6 +163,10 @@ const open = async (type: string, id?: number) => {
         chapterId: data.chapterId,
         knowledgePointId: data.knowledgePointId,
         aiKnowledgeId: data.aiKnowledgeId,
+      }
+      // 加载课程信息
+      if (data.courseId) {
+        await handleCourseChange(data.courseId)
       }
     } finally {
       formLoading.value = false

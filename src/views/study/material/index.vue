@@ -112,15 +112,13 @@
           {{ formatFileSize(scope.row.fileSize) }}
         </template>
       </el-table-column>
-      <el-table-column label="知识库" align="center" prop="aiKnowledgeId" width="100">
+      <el-table-column label="AI可用" align="center" width="100">
         <template #default="scope">
-          <el-tag v-if="scope.row.aiKnowledgeId" type="success">已绑定</el-tag>
-          <el-tag v-else type="info">未绑定</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="同步状态" align="center" prop="syncStatus" width="100">
-        <template #default="scope">
-          <dict-tag :type="DICT_TYPE.SYNC_STATUS" :value="scope.row.syncStatus" />
+          <el-tag v-if="scope.row.syncStatus === 2" type="success">可用</el-tag>
+          <el-tag v-else-if="scope.row.syncStatus === 1" type="warning">同步中</el-tag>
+          <el-tag v-else-if="scope.row.syncStatus === 3" type="danger">失败</el-tag>
+          <el-tag v-else-if="scope.row.aiKnowledgeId" type="info">待同步</el-tag>
+          <el-tag v-else type="info">未启用</el-tag>
         </template>
       </el-table-column>
       <el-table-column

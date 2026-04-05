@@ -47,4 +47,14 @@ export const CourseChapterApi = {
   exportCourseChapter: async (params) => {
     return await request.download({ url: `/study/course-chapter/export-excel`, params })
   },
+
+  // 查询简单课程列表（用于下拉选择）
+  getSimpleCourseList: async () => {
+    return await request.get({ url: `/study/course/simple-list` })
+  },
+
+  // 查询简单章节列表（用于下拉选择）
+  getSimpleChapterList: async (params: { courseId: number }) => {
+    return await request.get({ url: `/study/course-chapter/simple-list`, params })
+  },
 }

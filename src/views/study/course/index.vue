@@ -98,6 +98,13 @@
           <dict-tag :type="DICT_TYPE.COURSE_DIFFICULTY" :value="scope.row.difficultyLevel" />
         </template>
       </el-table-column>
+      <el-table-column label="AI问答" align="center" width="100">
+        <template #default="scope">
+          <el-tag v-if="scope.row.aiEnabled && scope.row.aiKnowledgeId" type="success">已启用</el-tag>
+          <el-tag v-else-if="scope.row.aiEnabled" type="warning">初始化中</el-tag>
+          <el-tag v-else type="info">未启用</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="课程状态" align="center" prop="status" width="100">
         <template #default="scope">
           <dict-tag :type="DICT_TYPE.COURSE_STATUS" :value="scope.row.status" />

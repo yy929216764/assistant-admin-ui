@@ -5,8 +5,14 @@
       <!-- 头部 -->
       <div class="p-16px border-b border-gray-200">
         <div class="flex items-center justify-between mb-12px">
-          <span class="text-16px font-bold">学习问答</span>
-          <el-button type="primary" size="small" @click="handleCreateConversation">
+          <span class="text-16px font-bold text-gray-800">学习问答</span>
+          <el-button
+            type="primary"
+            size="small"
+            round
+            class="px-16px !bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 !border-0 shadow-md hover:shadow-lg transition-all"
+            @click="handleCreateConversation"
+          >
             <Icon icon="ep:plus" class="mr-4px" />
             新建会话
           </el-button>
@@ -34,16 +40,18 @@
           v-for="conv in conversationList"
           :key="conv.id"
           class="p-12px rounded-8px cursor-pointer mb-8px transition-all"
-          :class="activeConversationId === conv.id ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'"
+          :class="activeConversationId === conv.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'"
           @click="handleSelectConversation(conv)"
         >
           <div class="flex items-center justify-between">
             <div class="flex-1 min-w-0">
-              <div class="text-14px font-medium truncate">{{ conv.title }}</div>
+              <div class="text-14px font-medium truncate text-gray-800">
+                {{ formatConversationTitle(conv) }}
+              </div>
               <div class="text-12px text-gray-400 mt-4px flex items-center">
-                <span>{{ conv.courseName }}</span>
+                <span>{{ conv.courseName || '未选择课程' }}</span>
                 <span class="mx-4px">·</span>
-                <span>{{ conv.messageCount }}条消息</span>
+                <span>{{ conv.messageCount || 0 }}条消息</span>
               </div>
             </div>
             <el-dropdown @command="(cmd) => handleCommand(cmd, conv)" @click.stop>
@@ -67,13 +75,21 @@
       <!-- 头部 -->
       <div class="h-56px border-b border-gray-200 flex items-center justify-between px-20px">
         <div class="flex items-center">
-          <span class="text-16px font-bold">{{ activeConversation?.title || '请选择会话' }}</span>
+          <span class="text-16px font-bold">
+            {{ activeConversation ? formatConversationTitle(activeConversation) : '请选择会话' }}
+          </span>
           <el-tag v-if="currentCourseName" size="small" class="ml-12px">{{ currentCourseName }}</el-tag>
         </div>
         <div class="flex items-center gap-8px">
-          <el-button v-if="activeConversationId" size="small" @click="handleClearMessages">
+          <el-button
+            v-if="activeConversationId"
+            size="small"
+            round
+            class="!text-gray-500 hover:!text-red-500 hover:!bg-red-50 transition-all"
+            @click="handleClearMessages"
+          >
             <Icon icon="ep:delete" class="mr-4px" />
-            清空
+            清空消息
           </el-button>
         </div>
       </div>
@@ -267,7 +283,12 @@ const handleCourseChange = () => {
 const loadConversationList = async () => {
   try {
     const list = await StudyAiTutorApi.getConversationList(selectedCourseId.value)
-    conversationList.value = list
+    // 按最后更新时间倒序排序（最近活跃的会话在最前面）
+    conversationList.value = list.sort((a, b) => {
+      const timeA = a.updateTime || a.createTime
+      const timeB = b.updateTime || b.createTime
+      return new Date(timeB).getTime() - new Date(timeA).getTime()
+    })
   } catch (error) {
     console.error('加载会话列表失败', error)
   }
@@ -417,6 +438,39 @@ const formatTime = (time?: string) => {
   if (!time) return ''
   const date = new Date(time)
   return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+}
+
+/**
+ * 格式化会话标题
+ * 如果标题为空、为"新对话"或包含"新对话"，则根据场景类型和日期生成更有意义的标题
+ */
+const formatConversationTitle = (conv: StudyAiConversation): string => {
+  const title = conv.title?.trim()
+
+  // 如果标题有意义（不为空且不是"新对话"），直接返回
+  if (title && title !== '新对话' && !title.includes('新对话')) {
+    return title
+  }
+
+  // 根据场景类型生成前缀
+  const sceneTypeMap: Record<number, string> = {
+    1: '课程问答',
+    2: '错题分析',
+    3: '练习生成'
+  }
+  const prefix = sceneTypeMap[conv.sceneType] || '学习问答'
+
+  // 根据创建时间生成日期后缀
+  if (conv.createTime) {
+    const date = new Date(conv.createTime)
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    return `${prefix} · ${month}/${day} ${hour}:${minute}`
+  }
+
+  return prefix
 }
 </script>
 

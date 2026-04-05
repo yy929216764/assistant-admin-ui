@@ -11,14 +11,14 @@
       <el-form-item label="课程" prop="courseId">
         <el-select
           v-model="queryParams.courseId"
-          placeholder="请选择或搜索课程"
+          placeholder="请先选择课程"
           clearable
           filterable
           remote
           :remote-method="fetchCourseList"
           :loading="courseLoading"
-          class="!w-240px"
-          @change="handleQuery"
+          class="!w-280px"
+          @change="handleCourseChange"
           @focus="fetchCourseList('')"
         >
           <el-option
@@ -35,20 +35,33 @@
           placeholder="请输入知识点名称"
           clearable
           @keyup.enter="handleQuery"
-          class="!w-240px"
+          class="!w-200px"
         />
       </el-form-item>
       <el-form-item>
-        <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-        <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-        <el-button
-          type="primary"
-          plain
-          @click="openForm('create')"
-          v-hasPermi="['study:course-knowledge:create']"
-        >
-          <Icon icon="ep:plus" class="mr-5px" /> 新增
+        <el-button @click="handleQuery">
+          <Icon icon="ep:search" class="mr-5px" /> 搜索
         </el-button>
+        <el-button @click="resetQuery">
+          <Icon icon="ep:refresh" class="mr-5px" /> 重置
+        </el-button>
+
+        <!-- 新增按钮 - 未选课程时禁用并提示 -->
+        <el-tooltip
+          :content="queryParams.courseId ? '添加新知识点' : '请先选择课程后再添加知识点'"
+          placement="top"
+        >
+          <el-button
+            type="primary"
+            plain
+            :disabled="!queryParams.courseId"
+            @click="openForm('create')"
+            v-hasPermi="['study:course-knowledge:create']"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 新增知识点
+          </el-button>
+        </el-tooltip>
+
         <el-button
           type="success"
           plain
@@ -58,42 +71,76 @@
         >
           <Icon icon="ep:download" class="mr-5px" /> 导出
         </el-button>
-        <el-button
-            type="danger"
-            plain
-            :disabled="isEmpty(checkedIds)"
-            @click="handleDeleteBatch"
-            v-hasPermi="['study:course-knowledge:delete']"
-        >
-          <Icon icon="ep:delete" class="mr-5px" /> 批量删除
-        </el-button>
       </el-form-item>
     </el-form>
+
+    <!-- 未选择课程提示 -->
+    <el-alert
+      v-if="!queryParams.courseId"
+      title="请先选择课程"
+      description="选择课程后，可以查看和管理该课程的知识点"
+      type="info"
+      :closable="false"
+      show-icon
+      class="mb-16px"
+    />
+
+    <!-- 已选课程提示 -->
+    <el-alert
+      v-else
+      :title="`当前课程：${currentCourseName || '加载中...'}`"
+      :description="`共 ${total} 个知识点`"
+      type="success"
+      :closable="false"
+      class="mb-16px"
+    />
   </ContentWrap>
 
   <!-- 列表 -->
   <ContentWrap>
     <el-table
-        row-key="id"
-        v-loading="loading"
-        :data="list"
-        :stripe="true"
-        :show-overflow-tooltip="true"
-        @selection-change="handleRowCheckboxChange"
+      v-loading="loading"
+      :data="list"
+      :stripe="true"
+      :show-overflow-tooltip="true"
+      row-key="id"
     >
-    <el-table-column type="selection" width="55" />
-      <el-table-column label="编号" align="center" prop="id" width="80" />
-      <el-table-column label="知识点名称" align="center" prop="knowledgePointName" min-width="200" />
-      <el-table-column label="所属课程" align="center" prop="courseName" width="150" />
-      <el-table-column label="排序" align="center" prop="sort" width="80" />
+      <el-table-column type="selection" width="55" />
+
+      <el-table-column label="知识点名称" align="left" prop="knowledgePointName" min-width="250">
+        <template #default="scope">
+          <div class="flex items-center">
+            <Icon icon="ep:lightbulb" class="mr-8px text-yellow-500 text-16px" />
+            <span class="font-medium">{{ scope.row.knowledgePointName }}</span>
+          </div>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="所属章节" align="left" prop="chapterName" min-width="200">
+        <template #default="scope">
+          <div v-if="scope.row.chapterName" class="flex items-center text-gray-600">
+            <Icon icon="ep:document" class="mr-4px text-green-500" />
+            {{ scope.row.chapterName }}
+          </div>
+          <el-tag v-else type="info" size="small">未关联章节</el-tag>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="排序" align="center" prop="sort" width="80">
+        <template #default="scope">
+          <span class="text-gray-500">{{ scope.row.sort }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column
         label="创建时间"
         align="center"
         prop="createTime"
         :formatter="dateFormatter"
-        width="180px"
+        width="160px"
       />
-      <el-table-column label="操作" align="center" min-width="120px" fixed="right">
+
+      <el-table-column label="操作" align="center" width="180px" fixed="right">
         <template #default="scope">
           <el-button
             link
@@ -101,7 +148,7 @@
             @click="openForm('update', scope.row.id)"
             v-hasPermi="['study:course-knowledge:update']"
           >
-            编辑
+            <Icon icon="ep:edit" class="mr-4px" /> 编辑
           </el-button>
           <el-button
             link
@@ -109,13 +156,25 @@
             @click="handleDelete(scope.row.id)"
             v-hasPermi="['study:course-knowledge:delete']"
           >
-            删除
+            <Icon icon="ep:delete" class="mr-4px" /> 删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 空状态 - 已选课程但无数据 -->
+    <el-empty
+      v-if="!loading && queryParams.courseId && list.length === 0"
+      description="该课程暂无知识点"
+    >
+      <el-button type="primary" @click="openForm('create')">
+        <Icon icon="ep:plus" class="mr-5px" /> 添加第一个知识点
+      </el-button>
+    </el-empty>
+
     <!-- 分页 -->
     <Pagination
+      v-if="total > 0"
       :total="total"
       v-model:page="queryParams.pageNo"
       v-model:limit="queryParams.pageSize"
@@ -123,14 +182,12 @@
     />
   </ContentWrap>
 
-  <!-- 表单弹窗：添加/修改 -->
+  <!-- 表单弹窗 -->
   <CourseKnowledgeForm ref="formRef" @success="getList" />
 </template>
 
 <script setup lang="ts">
-import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
 import { CourseKnowledgeApi, CourseKnowledge } from '@/api/study/courseknowledge'
 import { CourseApi } from '@/api/study/course'
 import CourseKnowledgeForm from './CourseKnowledgeForm.vue'
@@ -138,25 +195,38 @@ import CourseKnowledgeForm from './CourseKnowledgeForm.vue'
 /** 课程知识点 列表 */
 defineOptions({ name: 'CourseKnowledge' })
 
-const message = useMessage() // 消息弹窗
-const { t } = useI18n() // 国际化
+const message = useMessage()
+const { t } = useI18n()
 
-const loading = ref(true) // 列表的加载中
-const list = ref<CourseKnowledge[]>([]) // 列表的数据
-const total = ref(0) // 列表的总页数
+const loading = ref(true)
+const list = ref<CourseKnowledge[]>([])
+const total = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  courseId: undefined,
+  courseId: undefined as number | undefined,
   knowledgePointName: undefined,
 })
-const queryFormRef = ref() // 搜索的表单
-const exportLoading = ref(false) // 导出的加载中
-const courseList = ref<any[]>([]) // 课程列表（用于下拉选择）
-const courseLoading = ref(false) // 课程下拉加载中
+const queryFormRef = ref()
+const exportLoading = ref(false)
+const courseList = ref<any[]>([])
+const courseLoading = ref(false)
+
+// 当前选中的课程名称
+const currentCourseName = computed(() => {
+  const course = courseList.value.find(c => c.id === queryParams.courseId)
+  return course?.courseName
+})
 
 /** 查询列表 */
 const getList = async () => {
+  if (!queryParams.courseId) {
+    list.value = []
+    total.value = 0
+    loading.value = false
+    return
+  }
+
   loading.value = true
   try {
     const data = await CourseKnowledgeApi.getCourseKnowledgePage(queryParams)
@@ -165,6 +235,12 @@ const getList = async () => {
   } finally {
     loading.value = false
   }
+}
+
+/** 课程选择变化 */
+const handleCourseChange = () => {
+  queryParams.pageNo = 1
+  getList()
 }
 
 /** 搜索按钮操作 */
@@ -176,24 +252,22 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
-  handleQuery()
+  list.value = []
+  total.value = 0
 }
 
 /** 添加/修改操作 */
 const formRef = ref()
 const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+  formRef.value.open(type, id, queryParams.courseId)
 }
 
 /** 删除按钮操作 */
 const handleDelete = async (id: number) => {
   try {
-    // 删除的二次确认
     await message.delConfirm()
-    // 发起删除
     await CourseKnowledgeApi.deleteCourseKnowledge(id)
     message.success(t('common.delSuccess'))
-    // 刷新列表
     await getList()
   } catch {}
 }
@@ -201,7 +275,6 @@ const handleDelete = async (id: number) => {
 /** 批量删除课程知识点 */
 const handleDeleteBatch = async () => {
   try {
-    // 删除的二次确认
     await message.delConfirm()
     await CourseKnowledgeApi.deleteCourseKnowledgeList(checkedIds.value);
     checkedIds.value = [];
@@ -218,9 +291,7 @@ const handleRowCheckboxChange = (records: CourseKnowledge[]) => {
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
-    // 导出的二次确认
     await message.exportConfirm()
-    // 发起导出
     exportLoading.value = true
     const data = await CourseKnowledgeApi.exportCourseKnowledge(queryParams)
     download.excel(data, '课程知识点.xls')
@@ -247,6 +318,6 @@ const fetchCourseList = async (query: string) => {
 
 /** 初始化 **/
 onMounted(() => {
-  getList()
+  loading.value = false
 })
 </script>

@@ -58,22 +58,16 @@
         </el-radio-group>
       </el-form-item>
 
-      <el-form-item label="知识库" prop="aiKnowledgeId">
-        <el-select
-          v-model="formData.aiKnowledgeId"
-          placeholder="请选择知识库（用于AI问答）"
-          clearable
-          class="!w-full"
-        >
-          <el-option
-            v-for="item in knowledgeList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
+      <el-form-item label="AI问答" prop="aiEnabled">
+        <el-switch
+          v-model="formData.aiEnabled"
+          :active-value="1"
+          :inactive-value="0"
+          active-text="启用"
+          inactive-text="禁用"
+        />
         <div class="form-tip text-gray-400 text-xs mt-1">
-          绑定知识库后，课程可使用AI问答功能
+          启用后，系统将自动创建知识库，上传的资料将用于AI问答检索
         </div>
       </el-form-item>
 
@@ -98,7 +92,6 @@
 
 <script setup lang="ts">
 import { CourseApi, Course } from '@/api/study/course'
-import { KnowledgeApi } from '@/api/ai/knowledge/knowledge'
 import { UploadImg } from '@/components/UploadFile'
 
 /** 课程 表单 */
@@ -112,11 +105,6 @@ const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 
-const knowledgeList = ref<any[]>([]) // 知识库列表
-
-// 从环境变量获取默认模型ID
-const defaultModelId = import.meta.env.VITE_APP_COURSE_DEFAULT_MODEL_ID || undefined
-
 const formData = ref({
   id: undefined,
   courseName: undefined,
@@ -126,7 +114,7 @@ const formData = ref({
   difficultyLevel: 1,
   status: 0,
   teacherId: undefined,
-  aiKnowledgeId: undefined,
+  aiEnabled: 1, // 默认启用AI
   defaultModelId: undefined,
   sort: 0,
 })
@@ -139,25 +127,12 @@ const formRules = reactive({
 
 const formRef = ref() // 表单 Ref
 
-/** 获取知识库列表 */
-const getKnowledgeList = async () => {
-  try {
-    const data = await KnowledgeApi.getKnowledgePage({ pageNo: 1, pageSize: 100 })
-    knowledgeList.value = data.list || []
-  } catch (error) {
-    console.error('获取知识库列表失败', error)
-  }
-}
-
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
   dialogVisible.value = true
   dialogTitle.value = type === 'create' ? '新增课程' : '编辑课程'
   formType.value = type
   resetForm()
-
-  // 加载知识库列表
-  await getKnowledgeList()
 
   // 修改时，设置数据
   if (id) {
@@ -173,7 +148,7 @@ const open = async (type: string, id?: number) => {
         difficultyLevel: data.difficultyLevel,
         status: data.status,
         teacherId: data.teacherId,
-        aiKnowledgeId: data.aiKnowledgeId,
+        aiEnabled: data.aiEnabled ?? 1,
         defaultModelId: data.defaultModelId,
         sort: data.sort,
       }
@@ -193,10 +168,7 @@ const submitForm = async () => {
   formLoading.value = true
   try {
     const data = { ...formData.value } as unknown as Course
-    // 如果没有设置默认模型，使用配置文件中的默认值
-    if (!data.defaultModelId && defaultModelId) {
-      data.defaultModelId = Number(defaultModelId)
-    }
+    // 默认模型ID由后端根据配置自动设置，前端无需处理
     if (formType.value === 'create') {
       await CourseApi.createCourse(data)
       message.success(t('common.createSuccess'))
@@ -223,7 +195,7 @@ const resetForm = () => {
     difficultyLevel: 1,
     status: 0,
     teacherId: undefined,
-    aiKnowledgeId: undefined,
+    aiEnabled: 1, // 默认启用AI
     defaultModelId: undefined,
     sort: 0,
   }
