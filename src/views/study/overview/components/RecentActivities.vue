@@ -16,7 +16,7 @@
           <div class="activity-title">{{ activity.title }}</div>
           <div class="activity-desc">{{ activity.description }}</div>
         </div>
-        <div class="activity-time">{{ formatTime(activity.time) }}</div>
+        <div class="activity-time">{{ formatPast(activity.time) }}</div>
       </div>
     </div>
   </div>
@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { formatTime } from '@/utils/formatTime'
+import { formatPast } from '@/utils/formatTime'
 import type { RecentActivityVO } from '@/api/study/overview'
 
 interface Props {
