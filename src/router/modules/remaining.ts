@@ -746,6 +746,51 @@ const remainingRouter: AppRouteRecordRaw[] = [
         component: () => import('@/views/iot/ota/firmware/detail/index.vue')
       }
     ]
+  },
+  // ==================== 阶段三新增：练习与错题本路由 ====================
+  {
+    path: '/study',
+    component: Layout,
+    name: 'Study',
+    meta: {
+      hidden: true
+    },
+    children: [
+      {
+        path: 'exercise/do',
+        name: 'ExerciseDo',
+        component: () => import('@/views/study/exercise/do/index.vue'),
+        meta: {
+          title: '练习答题',
+          hidden: true,
+          noCache: true,
+          canTo: true
+        }
+      },
+      {
+        path: 'exercise/result',
+        name: 'ExerciseResult',
+        component: () => import('@/views/study/exercise/result/index.vue'),
+        meta: {
+          title: '练习结果',
+          hidden: true,
+          noCache: true,
+          canTo: true
+        }
+      },
+      {
+        path: 'wrongbook/detail',
+        name: 'WrongBookDetail',
+        component: () => import('@/views/study/wrongbook/detail/index.vue'),
+        meta: {
+          title: '错题详情',
+          hidden: true,
+          noCache: true,
+          canTo: true,
+          activeMenu: '/study/wrongbook'
+        }
+      }
+    ]
   }
 ]
 

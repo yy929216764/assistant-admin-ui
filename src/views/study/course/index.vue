@@ -191,6 +191,13 @@
           </el-button>
           <el-button
             link
+            type="warning"
+            @click="handleExercise(scope.row)"
+          >
+            开始练习
+          </el-button>
+          <el-button
+            link
             type="danger"
             @click="handleDelete(scope.row.id)"
             v-hasPermi="['study:course:delete']"
@@ -218,13 +225,16 @@ import { isEmpty } from '@/utils/is'
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { CourseApi, Course } from '@/api/study/course'
+import { ExerciseApi } from '@/api/study/exercise'
 import CourseForm from './CourseForm.vue'
+import { useRouter } from 'vue-router'
 
 /** 课程 列表 */
 defineOptions({ name: 'Course' })
 
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
+const router = useRouter() // 路由
 
 const loading = ref(true) // 列表的加载中
 const list = ref<Course[]>([]) // 列表的数据
@@ -315,6 +325,26 @@ const handleAiChat = async (row: Course) => {
   }
   // 跳转到学习问答页面，带上课程ID
   window.open(`#/study/ai-tutor?courseId=${row.id}`, '_blank')
+}
+
+/** 开始练习按钮操作 */
+const handleExercise = async (row: Course) => {
+  try {
+    message.loading('正在生成练习题目...')
+    // 生成练习
+    const exerciseId = await ExerciseApi.generateExercise({
+      courseId: row.id!,
+      questionCount: 5
+    })
+    message.success('练习生成成功')
+    // 跳转到练习页面
+    router.push({
+      path: '/study/exercise/do',
+      query: { id: exerciseId }
+    })
+  } catch (error) {
+    message.error('生成练习失败')
+  }
 }
 
 /** 导出按钮操作 */

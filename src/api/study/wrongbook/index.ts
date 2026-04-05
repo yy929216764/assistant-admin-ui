@@ -62,4 +62,32 @@ export const WrongBookApi = {
   exportWrongBook: async (params) => {
     return await request.download({ url: `/study/wrong-book/export-excel`, params })
   },
+
+  // ==================== 阶段三新增：错题分析与练习接口 ====================
+
+  // AI错因分析
+  analyzeWrongBook: async (wrongBookId: number, modelId?: number) => {
+    return await request.post({ url: `/study/wrong-book/analyze`, data: { wrongBookId, modelId } })
+  },
+
+  // 标记错题已掌握
+  masterWrongBook: async (id: number) => {
+    return await request.post({ url: `/study/wrong-book/master`, params: { id } })
+  },
+
+  // 从错题生成新练习
+  retryWrongBook: async (wrongBookIds: number[]) => {
+    return await request.post({ url: `/study/wrong-book/retry`, data: { wrongBookIds } })
+  },
+}
+
+/** 错题分析请求 */
+export interface WrongBookAnalyzeReqVO {
+  wrongBookId: number
+  modelId?: number
+}
+
+/** 重新练习请求 */
+export interface WrongBookRetryReqVO {
+  wrongBookIds: number[]
 }

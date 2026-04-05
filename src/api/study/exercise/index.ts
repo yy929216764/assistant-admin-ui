@@ -57,4 +57,114 @@ export const ExerciseApi = {
   exportExercise: async (params) => {
     return await request.download({ url: `/study/exercise/export-excel`, params })
   },
+
+  // ==================== 阶段三新增：练习生成与答题接口 ====================
+
+  // 生成AI练习题
+  generateExercise: async (data: ExerciseGenerateReqVO) => {
+    return await request.post({ url: `/study/exercise/generate`, data })
+  },
+
+  // 获取练习详情（含题目列表）
+  getExerciseDetail: async (id: number) => {
+    return await request.get({ url: `/study/exercise/detail?id=` + id })
+  },
+
+  // 提交答案
+  submitAnswer: async (data: AnswerSubmitReqVO) => {
+    return await request.post({ url: `/study/exercise/answer/submit`, data })
+  },
+
+  // 完成练习
+  completeExercise: async (exerciseId: number) => {
+    return await request.post({ url: `/study/exercise/complete`, params: { exerciseId } })
+  },
+}
+
+/** 生成练习请求 */
+export interface ExerciseGenerateReqVO {
+  courseId: number
+  knowledgePointId?: number
+  questionCount?: number
+  modelId?: number
+}
+
+/** 练习详情响应 */
+export interface ExerciseDetailRespVO {
+  id: number
+  exerciseName: string
+  courseId: number
+  courseName: string
+  chapterId?: number
+  knowledgePointId?: number
+  exerciseType: number
+  status: number
+  questionCount: number
+  score?: number
+  correctCount?: number
+  startTime?: string
+  submitTime?: string
+  questions: ExerciseQuestionRespVO[]
+}
+
+/** 练习题响应 */
+export interface ExerciseQuestionRespVO {
+  id: number
+  exerciseId: number
+  questionType: number
+  questionContent: string
+  options?: Record<string, string>
+  sort: number
+  knowledgePointId?: number
+  sourceType: number
+  aiGenerated: boolean
+  // 答题后返回的字段
+  correctAnswer?: string
+  analysis?: string
+  userAnswer?: string
+  isCorrect?: boolean
+}
+
+/** 提交答案请求 */
+export interface AnswerSubmitReqVO {
+  exerciseId: number
+  questionId: number
+  userAnswer?: string
+  isLastQuestion?: boolean
+  answerTimeMs?: number
+}
+
+/** 提交答案响应 */
+export interface AnswerSubmitRespVO {
+  isCorrect: boolean
+  correctAnswer?: string
+  analysis?: string
+  isCompleted: boolean
+  nextQuestionId?: number
+  score?: number
+}
+
+/** 练习结果响应 */
+export interface ExerciseResultRespVO {
+  exerciseId: number
+  exerciseName: string
+  score: number
+  totalScore: number
+  correctCount: number
+  totalCount: number
+  accuracy: number
+  wrongBookAddedCount: number
+  answerResults: ExerciseAnswerResultVO[]
+}
+
+/** 答题结果项 */
+export interface ExerciseAnswerResultVO {
+  questionId: number
+  questionContent: string
+  questionType: number
+  userAnswer: string
+  correctAnswer: string
+  isCorrect: boolean
+  analysis: string
+  score: number
 }
