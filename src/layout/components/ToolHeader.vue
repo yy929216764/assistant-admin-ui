@@ -1,5 +1,5 @@
 <script lang="tsx">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, ref } from 'vue'
 import { Message } from '@/layout/components//Message'
 import { Collapse } from '@/layout/components/Collapse'
 import { UserInfo } from '@/layout/components/UserInfo'
@@ -7,6 +7,7 @@ import { Screenfull } from '@/layout/components/Screenfull'
 import { Breadcrumb } from '@/layout/components/Breadcrumb'
 import { SizeDropdown } from '@/layout/components/SizeDropdown'
 import { LocaleDropdown } from '@/layout/components/LocaleDropdown'
+import { Setting } from '@/layout/components/Setting'
 import RouterSearch from '@/components/RouterSearch/index.vue'
 import TenantVisit from '@/layout/components/TenantVisit/index.vue'
 import { useAppStore } from '@/store/modules/app'
@@ -51,6 +52,12 @@ const hasTenantVisitPermission = computed(
 export default defineComponent({
   name: 'ToolHeader',
   setup() {
+    const settingRef = ref<InstanceType<typeof Setting>>()
+
+    const openSetting = () => {
+      settingRef.value?.openDrawer()
+    }
+
     return () => (
       <div
         id={`${variables.namespace}-tool-header`}
@@ -86,6 +93,14 @@ export default defineComponent({
           {message.value ? (
             <Message class="custom-hover" color="var(--top-header-text-color)"></Message>
           ) : undefined}
+          {/* 设置按钮 */}
+          <div
+            class="custom-hover cursor-pointer flex items-center justify-center h-full px-8px"
+            onClick={openSetting}
+          >
+            <Icon icon="ep:setting" color="var(--top-header-text-color)" size={18} />
+          </div>
+          <Setting ref={settingRef} />
           <UserInfo></UserInfo>
         </div>
       </div>

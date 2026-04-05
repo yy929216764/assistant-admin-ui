@@ -5,31 +5,32 @@
 
   --left-menu-min-width: 64px;
 
-  --left-menu-bg-color: #001529;
+  /* 白色主题菜单 */
+  --left-menu-bg-color: #ffffff;
 
-  --left-menu-bg-light-color: #0f2438;
+  --left-menu-bg-light-color: #f5f7fa;
 
-  --left-menu-bg-active-color: var(--el-color-primary);
+  --left-menu-bg-active-color: rgba(102, 126, 234, 0.1);
 
-  --left-menu-text-color: #bfcbd9;
+  --left-menu-text-color: #333333;
 
-  --left-menu-text-active-color: #fff;
+  --left-menu-text-active-color: #667eea;
 
-  --left-menu-collapse-bg-active-color: var(--el-color-primary);
+  --left-menu-collapse-bg-active-color: rgba(102, 126, 234, 0.1);
   /* left menu end */
 
   /* logo start */
   --logo-height: 50px;
 
-  --logo-title-text-color: #fff;
+  --logo-title-text-color: #333333;
   /* logo end */
 
   /* header start */
-  --top-header-bg-color: '#fff';
+  --top-header-bg-color: #ffffff;
 
-  --top-header-text-color: 'inherit';
+  --top-header-text-color: #333333;
 
-  --top-header-hover-color: #f6f6f6;
+  --top-header-hover-color: #f5f7fa;
 
   --top-tool-height: var(--logo-height);
 

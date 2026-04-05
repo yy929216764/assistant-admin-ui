@@ -69,35 +69,35 @@ export const useAppStore = defineStore('app', {
       fixedMenu: wsCache.get('fixedMenu') || false, // 是否固定菜单
 
       layout: wsCache.get(CACHE_KEY.LAYOUT) || 'classic', // layout布局
-      isDark: wsCache.get(CACHE_KEY.IS_DARK) || false, // 是否是暗黑模式
+      isDark: false, // 强制使用白天模式，不允许暗黑主题
       currentSize: wsCache.get('default') || 'default', // 组件尺寸
       theme: wsCache.get(CACHE_KEY.THEME) || {
-        // 主题色
-        elColorPrimary: '#409eff',
+        // 主题色 - 使用紫色系更符合AI学习系统
+        elColorPrimary: '#667eea',
         // 左侧菜单边框颜色
-        leftMenuBorderColor: 'inherit',
-        // 左侧菜单背景颜色
-        leftMenuBgColor: '#001529',
-        // 左侧菜单浅色背景颜色
-        leftMenuBgLightColor: '#0f2438',
-        // 左侧菜单选中背景颜色
-        leftMenuBgActiveColor: 'var(--el-color-primary)',
+        leftMenuBorderColor: '#eee',
+        // 左侧菜单背景颜色 - 白色主题
+        leftMenuBgColor: '#ffffff',
+        // 左侧菜单浅色背景颜色 - 白色主题
+        leftMenuBgLightColor: '#f5f7fa',
+        // 左侧菜单选中背景颜色 - 淡紫色
+        leftMenuBgActiveColor: 'rgba(102, 126, 234, 0.1)',
         // 左侧菜单收起选中背景颜色
-        leftMenuCollapseBgActiveColor: 'var(--el-color-primary)',
-        // 左侧菜单字体颜色
-        leftMenuTextColor: '#bfcbd9',
-        // 左侧菜单选中字体颜色
-        leftMenuTextActiveColor: '#fff',
+        leftMenuCollapseBgActiveColor: 'rgba(102, 126, 234, 0.1)',
+        // 左侧菜单字体颜色 - 深灰色
+        leftMenuTextColor: '#333333',
+        // 左侧菜单选中字体颜色 - 主题紫色
+        leftMenuTextActiveColor: '#667eea',
         // logo字体颜色
-        logoTitleTextColor: '#fff',
+        logoTitleTextColor: '#333333',
         // logo边框颜色
-        logoBorderColor: 'inherit',
+        logoBorderColor: '#eee',
         // 头部背景颜色
-        topHeaderBgColor: '#fff',
+        topHeaderBgColor: '#ffffff',
         // 头部字体颜色
-        topHeaderTextColor: 'inherit',
+        topHeaderTextColor: '#333333',
         // 头部悬停颜色
-        topHeaderHoverColor: '#f6f6f6',
+        topHeaderHoverColor: '#f5f7fa',
         // 头部边框颜色
         topToolBorderColor: '#eee'
       }

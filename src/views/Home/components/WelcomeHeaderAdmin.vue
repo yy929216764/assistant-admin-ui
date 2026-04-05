@@ -2,7 +2,7 @@
   <div class="welcome-header-admin">
     <div class="welcome-content">
       <el-avatar :size="64" :src="avatar" class="avatar">
-        <img src="@/assets/imgs/avatar.gif" alt="avatar" />
+        <img src="@/assets/svgs/avatar-default.svg" alt="avatar" />
       </el-avatar>
       <div class="welcome-text">
         <div class="welcome-title">

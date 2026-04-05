@@ -8,7 +8,6 @@ import { useDesign } from '@/hooks/web/useDesign'
 import { setCssVar, trim } from '@/utils'
 import { colorIsDark, hexToRGB, lighten } from '@/utils/color'
 import { useAppStore } from '@/store/modules/app'
-import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
 import ColorRadioPicker from './components/ColorRadioPicker.vue'
 import InterfaceDisplay from './components/InterfaceDisplay.vue'
 import LayoutRadioPicker from './components/LayoutRadioPicker.vue'
@@ -22,6 +21,15 @@ const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('setting')
 const layout = computed(() => appStore.getLayout)
 const drawer = ref(false)
+
+// 暴露打开抽屉的方法
+const openDrawer = () => {
+  drawer.value = true
+}
+
+defineExpose({
+  openDrawer
+})
 
 // 主题色相关
 const systemTheme = ref(appStore.getTheme.elColorPrimary)
@@ -201,13 +209,7 @@ const clear = () => {
 </script>
 
 <template>
-  <div
-    :class="prefixCls"
-    class="fixed right-0 top-[45%] h-40px w-40px cursor-pointer bg-[var(--el-color-primary)] text-center leading-40px"
-    @click="drawer = true"
-  >
-    <Icon color="#fff" icon="ep:setting" />
-  </div>
+  <!-- 设置按钮已移到顶部工具栏 -->
 
   <ElDrawer v-model="drawer" :z-index="4000" direction="rtl" size="350px">
     <template #header>
@@ -215,10 +217,6 @@ const clear = () => {
     </template>
 
     <div class="text-center">
-      <!-- 主题 -->
-      <ElDivider>{{ t('setting.theme') }}</ElDivider>
-      <ThemeSwitch />
-
       <!-- 布局 -->
       <ElDivider>{{ t('setting.layout') }}</ElDivider>
       <LayoutRadioPicker />
