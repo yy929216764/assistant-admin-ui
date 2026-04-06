@@ -89,43 +89,34 @@
       </el-col>
     </el-row>
 
-    <!-- 待办事项/系统通知 -->
+    <!-- 最近公告 -->
     <el-row :gutter="20" style="margin-top: 24px;">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card shadow="never">
+      <el-col :span="24">
+        <el-card shadow="never" v-loading="noticeLoading">
           <template #header>
             <div class="card-header">
-              <span><Icon icon="ep:warning-filled" /> 待办事项</span>
-              <el-badge :value="3" />
+              <span><Icon icon="ep:notification" /> 最近公告</span>
+              <el-button type="primary" link size="small" @click="router.push('/system/notice')">查看全部</el-button>
             </div>
           </template>
-          <div class="todo-list">
-            <div v-for="(todo, index) in todoList" :key="index" class="todo-item">
-              <div class="todo-dot" :class="todo.type"></div>
-              <div class="todo-content">{{ todo.content }}</div>
-              <div class="todo-time">{{ todo.time }}</div>
-            </div>
+          <div v-if="noticeList.length === 0" class="empty-notice">
+            <el-empty description="暂无公告" :image-size="60" />
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card shadow="never">
-          <template #header>
-            <div class="card-header">
-              <span><Icon icon="ep:notification" /> 系统通知</span>
-              <el-button type="primary" link size="small">查看全部</el-button>
-            </div>
-          </template>
-          <div class="notice-list">
-            <div v-for="(notice, index) in noticeList" :key="index" class="notice-item">
-              <div class="notice-icon" :class="notice.type">
-                <Icon :icon="getNoticeIcon(notice.type)" />
+          <div v-else class="notice-list">
+            <div v-for="(notice, index) in noticeList" :key="notice.id || index" class="notice-item">
+              <div class="notice-icon" :class="getNoticeTypeClass(notice.type)">
+                <Icon icon="ep:bell" />
               </div>
               <div class="notice-content">
-                <div class="notice-title">{{ notice.title }}</div>
-                <div class="notice-desc">{{ notice.desc }}</div>
+                <div class="notice-title">
+                  <el-tag size="small" :type="notice.type === 2 ? 'success' : 'primary'" class="mr-8px">
+                    {{ getNoticeTypeLabel(notice.type) }}
+                  </el-tag>
+                  {{ notice.title }}
+                </div>
+                <div class="notice-desc">{{ notice.content }}</div>
               </div>
-              <div class="notice-time">{{ notice.time }}</div>
+              <div class="notice-time">{{ formatTime(notice.createTime, 'yyyy-MM-dd') }}</div>
             </div>
           </div>
         </el-card>
@@ -135,13 +126,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WelcomeHeaderAdmin from './components/WelcomeHeaderAdmin.vue'
 import AdminStatCard from './components/AdminStatCard.vue'
 import UserGrowthChart from './components/UserGrowthChart.vue'
 import CourseHotChart from './components/CourseHotChart.vue'
 import { getAdminDashboard, type AdminDashboardVO } from '@/api/study/overview/admin'
+import { getNoticePage, type NoticeVO } from '@/api/system/notice'
+import { formatTime } from '@/utils'
 
 /** 管理员首页 */
 defineOptions({ name: 'AdminHome' })
@@ -175,28 +168,44 @@ const fetchDashboardData = async () => {
   }
 }
 
-// 待办事项
-const todoList = ref([
-  { type: 'urgent', content: '新课程资料审核', time: '2小时前' },
-  { type: 'normal', content: '学员问题待回复', time: '4小时前' },
-  { type: 'normal', content: '周报数据待导出', time: '昨天' }
-])
+// 最近公告列表
+const noticeList = ref<NoticeVO[]>([])
+const noticeLoading = ref(false)
 
-// 系统通知
-const noticeList = ref([
-  { type: 'system', title: '系统更新', desc: '系统已升级至v2.0', time: '10分钟前' },
-  { type: 'success', title: '备份完成', desc: '每日数据备份成功', time: '1小时前' },
-  { type: 'warning', title: '存储告警', desc: '存储空间使用率超过80%', time: '2小时前' }
-])
-
-// 获取通知图标
-const getNoticeIcon = (type: string) => {
-  const icons: Record<string, string> = {
-    system: 'ep:cpu',
-    success: 'ep:success-filled',
-    warning: 'ep:warning-filled'
+// 获取最近公告
+const fetchRecentNotices = async () => {
+  noticeLoading.value = true
+  try {
+    const data = await getNoticePage({
+      pageNo: 1,
+      pageSize: 5,
+      status: 0 // 已发布
+    })
+    noticeList.value = data.list || []
+  } catch (error) {
+    console.error('获取公告失败:', error)
+    noticeList.value = []
+  } finally {
+    noticeLoading.value = false
   }
-  return icons[type] || 'ep:info-filled'
+}
+
+// 获取公告类型标签
+const getNoticeTypeLabel = (type?: number) => {
+  const types: Record<number, string> = {
+    1: '通知',
+    2: '公告'
+  }
+  return types[type || 1] || '通知'
+}
+
+// 获取公告类型样式
+const getNoticeTypeClass = (type?: number) => {
+  const classes: Record<number, string> = {
+    1: 'system',
+    2: 'success'
+  }
+  return classes[type || 1] || 'system'
 }
 
 // 跳转方法
@@ -208,6 +217,7 @@ const goToSystem = () => router.push('/system/user')
 // 加载数据
 onMounted(() => {
   fetchDashboardData()
+  fetchRecentNotices()
 })
 </script>
 
@@ -293,43 +303,8 @@ onMounted(() => {
   }
 }
 
-.todo-list {
-  .todo-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    .todo-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 12px;
-
-      &.urgent {
-        background: #F56C6C;
-      }
-
-      &.normal {
-        background: #409EFF;
-      }
-    }
-
-    .todo-content {
-      flex: 1;
-      font-size: 14px;
-      color: #303133;
-    }
-
-    .todo-time {
-      font-size: 12px;
-      color: #909399;
-    }
-  }
+.empty-notice {
+  padding: 20px 0;
 }
 
 .notice-list {

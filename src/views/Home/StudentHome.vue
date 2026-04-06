@@ -86,7 +86,7 @@
         <LearningTrendChart />
       </el-col>
       <el-col :xs="24" :sm="24" :md="24" :lg="10" :xl="10">
-        <CourseProgressChart />
+        <WrongBookAnalysis />
       </el-col>
     </el-row>
 
@@ -109,7 +109,7 @@ import StatCard from './components/StatCard.vue'
 import QuickActions from './components/QuickActions.vue'
 import RecentActivities from './components/RecentActivities.vue'
 import LearningTrendChart from './components/LearningTrendChart.vue'
-import CourseProgressChart from './components/CourseProgressChart.vue'
+import WrongBookAnalysis from './components/WrongBookAnalysis.vue'
 
 /** 学生端首页 */
 defineOptions({ name: 'StudentHome' })

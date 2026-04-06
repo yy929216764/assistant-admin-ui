@@ -12,7 +12,21 @@
     <div class="chart-container">
       <v-chart :option="chartOption" autoresize @click="handleChartClick" />
     </div>
-    <div class="course-list">
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="3" animated />
+    </div>
+
+    <!-- 空状态 -->
+    <el-empty
+      v-else-if="courseList.length === 0"
+      description="暂无学习中的课程"
+      :image-size="80"
+    >
+      <el-button type="primary" @click="goToCourses">去选课</el-button>
+    </el-empty>
+
+    <div v-else class="course-list">
       <div
         v-for="course in courseList"
         :key="course.courseId"
@@ -35,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -45,6 +59,8 @@ import {
   TitleComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { UserCourseApi } from '@/api/study/usercourse'
+import { CourseApi } from '@/api/study/course'
 
 // 注册ECharts组件
 use([
@@ -65,15 +81,68 @@ declare global {
 defineOptions({ name: 'CourseProgressChart' })
 
 const router = useRouter()
+const message = useMessage()
 
-// 模拟课程数据
-const courseList = ref([
-  { courseId: 1, courseName: 'Java程序设计', progress: 75, completedHours: 15, totalHours: 20 },
-  { courseId: 2, courseName: '数据结构与算法', progress: 45, completedHours: 9, totalHours: 20 },
-  { courseId: 3, courseName: '数据库系统原理', progress: 100, completedHours: 20, totalHours: 20 },
-  { courseId: 4, courseName: '计算机网络', progress: 30, completedHours: 6, totalHours: 20 },
-  { courseId: 5, courseName: '操作系统', progress: 10, completedHours: 2, totalHours: 20 }
-])
+// 加载状态
+const loading = ref(false)
+
+// 课程数据（从API获取）
+const courseList = ref<any[]>([])
+
+// 获取课程学习进度数据
+const fetchCourseProgress = async () => {
+  loading.value = true
+  try {
+    // 1. 获取当前用户的课程学习关系
+    const userCourseData = await UserCourseApi.getUserCoursePage({
+      pageNo: 1,
+      pageSize: 10,
+      enrollStatus: 1 // 学习中
+    })
+
+    if (!userCourseData.list || userCourseData.list.length === 0) {
+      courseList.value = []
+      return
+    }
+
+    // 2. 获取课程详情以补充课程名称
+    const courseListWithNames = await Promise.all(
+      userCourseData.list.map(async (item: any) => {
+        try {
+          const courseDetail = await CourseApi.getCourse(item.courseId)
+          return {
+            courseId: item.courseId,
+            courseName: courseDetail.courseName || `课程${item.courseId}`,
+            progress: item.progressPercent || 0,
+            completedHours: Math.round((item.progressPercent || 0) / 100 * 20),
+            totalHours: 20
+          }
+        } catch {
+          return {
+            courseId: item.courseId,
+            courseName: `课程${item.courseId}`,
+            progress: item.progressPercent || 0,
+            completedHours: Math.round((item.progressPercent || 0) / 100 * 20),
+            totalHours: 20
+          }
+        }
+      })
+    )
+
+    courseList.value = courseListWithNames
+  } catch (error) {
+    message.error('获取课程进度失败')
+    console.error(error)
+    courseList.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchCourseProgress()
+})
 
 // 计算图表数据
 const chartData = computed(() => {
@@ -201,6 +270,10 @@ const handleChartClick = (params: any) => {
       width: 100%;
       height: 100%;
     }
+  }
+
+  .loading-container {
+    padding: 20px 0;
   }
 
   .course-list {

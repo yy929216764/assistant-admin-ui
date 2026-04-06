@@ -826,6 +826,32 @@ const remainingRouter: AppRouteRecordRaw[] = [
           canTo: true,
           activeMenu: '/study/wrong-book'
         }
+      },
+      // ==================== 学生端练习中心路由 ====================
+      {
+        path: 'practice',
+        name: 'PracticeCenter',
+        component: () => import('@/views/study/practice/index.vue'),
+        meta: {
+          title: '练习中心',
+          hidden: false,
+          noCache: false,
+          canTo: true,
+          icon: 'ep:edit-pen',
+          activeMenu: '/study/practice'
+        }
+      },
+      {
+        path: 'practice/course',
+        name: 'CoursePractice',
+        component: () => import('@/views/study/practice/course.vue'),
+        meta: {
+          title: '课程练习',
+          hidden: true,
+          noCache: true,
+          canTo: true,
+          activeMenu: '/study/practice'
+        }
       }
     ]
   }

@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { use } from 'echarts/core'
 import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -27,6 +27,7 @@ import {
   TitleComponent, ToolboxComponent, DataZoomComponent, GraphicComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { getUserGrowthData } from '@/api/study/overview/admin'
 
 use([
   CanvasRenderer,
@@ -36,20 +37,42 @@ use([
 ])
 
 const timeRange = ref('7')
+const loading = ref(false)
 
-const mockData = {
-  '7': {
-    dates: ['04-01', '04-02', '04-03', '04-04', '04-05', '04-06', '04-07'],
-    counts: [5, 8, 12, 6, 15, 10, 18]
-  },
-  '30': {
-    dates: ['03-09', '03-13', '03-17', '03-21', '03-25', '03-29', '04-02', '04-06'],
-    counts: [8, 12, 15, 22, 18, 25, 30, 35]
+// 真实数据
+const growthData = ref<{ dates: string[]; counts: number[] }>({
+  dates: [],
+  counts: []
+})
+
+// 获取学员增长数据
+const fetchGrowthData = async () => {
+  loading.value = true
+  try {
+    const days = parseInt(timeRange.value)
+    const data = await getUserGrowthData(days)
+
+    // 处理数据
+    const sortedData = data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    growthData.value = {
+      dates: sortedData.map(item => {
+        const date = new Date(item.date)
+        return `${date.getMonth() + 1}-${date.getDate()}`
+      }),
+      counts: sortedData.map(item => item.count)
+    }
+  } catch (error) {
+    console.error('获取学员增长数据失败:', error)
+    // 使用空数据
+    growthData.value = { dates: [], counts: [] }
+  } finally {
+    loading.value = false
   }
 }
 
 const chartOption = computed(() => {
-  const data = mockData[timeRange.value as keyof typeof mockData]
+  const hasData = growthData.value.dates.length > 0
 
   return {
     tooltip: {
@@ -65,7 +88,7 @@ const chartOption = computed(() => {
     },
     xAxis: {
       type: 'category',
-      data: data.dates,
+      data: hasData ? growthData.value.dates : ['暂无数据'],
       axisLine: { lineStyle: { color: '#909399' } }
     },
     yAxis: {
@@ -77,7 +100,7 @@ const chartOption = computed(() => {
     series: [{
       name: '新增学员',
       type: 'bar',
-      data: data.counts,
+      data: hasData ? growthData.value.counts : [0],
       itemStyle: {
         color: new (echarts as any).graphic.LinearGradient(0, 0, 0, 1, [
           { offset: 0, color: '#95d475' },
@@ -93,7 +116,15 @@ const chartOption = computed(() => {
 
 const handleRangeChange = (val: string) => {
   timeRange.value = val
+  fetchGrowthData()
 }
+
+// 监听时间范围变化
+watch(() => timeRange.value, fetchGrowthData)
+
+onMounted(() => {
+  fetchGrowthData()
+})
 </script>
 
 <style scoped lang="scss">

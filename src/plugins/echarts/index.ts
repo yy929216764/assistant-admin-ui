@@ -21,11 +21,13 @@ import {
   TitleComponent,
   ToolboxComponent,
   TooltipComponent,
-  VisualMapComponent
+  VisualMapComponent,
+  GraphicComponent
 } from 'echarts/components'
 
 import { CanvasRenderer } from 'echarts/renderers'
 
+// 注册所有必要的组件和渲染器
 echarts.use([
   LegendComponent,
   TitleComponent,
@@ -37,6 +39,7 @@ echarts.use([
   AriaComponent,
   ParallelComponent,
   VisualMapComponent,
+  GraphicComponent,
   BarChart,
   LineChart,
   PieChart,

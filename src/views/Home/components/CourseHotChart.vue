@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { use } from 'echarts/core'
 import * as echarts from 'echarts/core'
@@ -24,6 +24,7 @@ import {
   TitleComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { getAdminDashboard } from '@/api/study/overview/admin'
 
 use([
   CanvasRenderer,
@@ -33,23 +34,46 @@ use([
 ])
 
 const router = useRouter()
+const loading = ref(false)
 
-const courseData = ref([
-  { name: 'Java程序设计', count: 128, courseId: 1 },
-  { name: '数据结构与算法', count: 96, courseId: 2 },
-  { name: '数据库系统原理', count: 85, courseId: 3 },
-  { name: '计算机网络', count: 72, courseId: 4 },
-  { name: '操作系统', count: 58, courseId: 5 }
-])
+// 课程热度数据（从API获取）
+const courseData = ref<{ name: string; count: number; courseId: number }[]>([])
+
+// 获取课程热度数据
+const fetchCourseHotData = async () => {
+  loading.value = true
+  try {
+    const data = await getAdminDashboard()
+    if (data.courseHot && data.courseHot.length > 0) {
+      courseData.value = data.courseHot.map(item => ({
+        name: item.courseName,
+        count: item.studyCount,
+        courseId: item.courseId
+      }))
+    } else {
+      // 如果没有数据，显示空状态
+      courseData.value = []
+    }
+  } catch (error) {
+    console.error('获取课程热度数据失败:', error)
+    courseData.value = []
+  } finally {
+    loading.value = false
+  }
+}
 
 const chartOption = computed(() => {
-  const sortedData = [...courseData.value].sort((a, b) => a.count - b.count)
+  const hasData = courseData.value.length > 0
+  const sortedData = hasData
+    ? [...courseData.value].sort((a, b) => a.count - b.count).slice(0, 5) // 取前5
+    : [{ name: '暂无数据', count: 0, courseId: 0 }]
 
   return {
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
       formatter: (params: any) => {
+        if (!hasData) return '暂无数据'
         return `${params[0].name}<br/>学习人次: ${params[0].value}`
       }
     },
@@ -87,7 +111,7 @@ const chartOption = computed(() => {
       },
       barWidth: '50%',
       label: {
-        show: true,
+        show: hasData,
         position: 'right',
         formatter: '{c}人'
       }
@@ -96,10 +120,15 @@ const chartOption = computed(() => {
 })
 
 const handleChartClick = (params: any) => {
-  if (params.data?.courseId) {
+  if (params.data?.courseId && params.data.courseId > 0) {
     router.push(`/study/course?id=${params.data.courseId}`)
   }
 }
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchCourseHotData()
+})
 </script>
 
 <style scoped lang="scss">

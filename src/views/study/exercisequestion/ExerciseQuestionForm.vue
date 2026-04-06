@@ -294,10 +294,13 @@ const optionTipText = computed(() => {
   return '最少2个选项，最多6个选项；点击选项字母可设置为正确答案'
 })
 
-// 监听题型变化
+// 监听题型变化（仅手动切换时触发，编辑时不应清空已加载的答案）
 watch(
   () => formData.value.questionType,
-  (newType) => {
+  (newType, oldType) => {
+    // 只有真正切换题型时才处理，且不是在编辑模式下加载数据时
+    if (oldType === undefined) return
+
     if (newType === 2) {
       // 判断题：固定A/B两个选项
       optionsList.value = [
@@ -488,8 +491,18 @@ const open = async (type: string, id?: number) => {
         aiGenerated: data.aiGenerated,
       }
 
-      // 解析选项JSON
-      if (data.optionsJson) {
+      // 回填选项列表
+      if (data.options && Object.keys(data.options).length > 0) {
+        // 优先使用后端返回的options对象
+        const list: Array<{ key: string; value: string }> = []
+        Object.keys(data.options).forEach((key) => {
+          list.push({ key, value: data.options[key] })
+        })
+        // 按A-Z排序
+        list.sort((a, b) => a.key.charCodeAt(0) - b.key.charCodeAt(0))
+        optionsList.value = list
+      } else if (data.optionsJson) {
+        // 兼容旧数据，使用optionsJson
         parseOptionsJson(data.optionsJson)
       }
 

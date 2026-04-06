@@ -60,9 +60,9 @@ export const ExerciseApi = {
 
   // ==================== 阶段三新增：练习生成与答题接口 ====================
 
-  // 生成AI练习题
+  // 生成AI练习题（AI生成耗时较长，设置120秒超时）
   generateExercise: async (data: ExerciseGenerateReqVO): Promise<number> => {
-    return await request.post({ url: `/study/exercise/generate`, data })
+    return await request.post({ url: `/study/exercise/generate`, data, timeout: 120000 })
   },
 
   // 获取练习详情（含题目列表）

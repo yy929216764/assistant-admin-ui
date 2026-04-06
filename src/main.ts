@@ -47,6 +47,34 @@ import { setupWangEditorPlugin } from '@/views/bpm/model/form/PrintTemplate'
 
 import print from 'vue3-print-nb' // 打印插件
 
+// 导入 echarts 核心并注册渲染器和组件
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import {
+  BarChart, LineChart, PieChart, RadarChart,
+  GaugeChart, FunnelChart, PictorialBarChart
+} from 'echarts/charts'
+import {
+  GridComponent, TooltipComponent, LegendComponent,
+  TitleComponent, ToolboxComponent, DataZoomComponent,
+  GraphicComponent, AriaComponent, PolarComponent,
+  VisualMapComponent, ParallelComponent
+} from 'echarts/components'
+
+// 必须先注册渲染器和组件，再导入 vue-echarts
+use([
+  CanvasRenderer,
+  BarChart, LineChart, PieChart, RadarChart,
+  GaugeChart, FunnelChart, PictorialBarChart,
+  GridComponent, TooltipComponent, LegendComponent,
+  TitleComponent, ToolboxComponent, DataZoomComponent,
+  GraphicComponent, AriaComponent, PolarComponent,
+  VisualMapComponent, ParallelComponent
+])
+
+// 注册 vue-echarts 全局组件
+import VChart from 'vue-echarts'
+
 // 创建实例
 const setupAll = async () => {
   const app = createApp(App)
@@ -76,6 +104,9 @@ const setupAll = async () => {
 
   // 打印
   app.use(print)
+
+  // 全局注册 vue-echarts 组件
+  app.component('VChart', VChart)
 
   app.mount('#app')
 }
